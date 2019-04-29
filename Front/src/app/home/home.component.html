@@ -1,0 +1,109 @@
+<ActionBar class="action-bar">
+    <!-- 
+        Use the NavigationButton as a side-drawer button in Android
+        because ActionItems are shown on the right side of the ActionBar
+    -->
+    <NavigationButton ios:visibility="collapsed" icon="res://menu" (tap)="onDrawerButtonTap()"></NavigationButton>
+    <!-- 
+        Use the ActionItem for IOS with position set to left. Using the
+        NavigationButton as a side-drawer button in iOS is not possible,
+        because its function is to always navigate back in the application.
+    -->
+    <ActionItem icon="res://navigation/menu" android:visibility="collapsed" (tap)="onDrawerButtonTap()"
+        ios.position="left">
+    </ActionItem>
+    <Label class="action-bar-title" text="Home"></Label>
+
+</ActionBar>
+
+<TabView (selectedIndexChanged)="onSelectedIndexChanged($event)">
+
+    <StackLayout *tabItem="{title: 'Todo'}">
+        <ScrollView orientation="vertical" (loaded)="onScrollLoaded($event)" (scroll)="onScroll($event)">
+            <StackLayout>
+                <StackLayout orientation="vertical" (loaded)="onScrollLoaded($event)" (scroll)="onScroll($event)">
+                    <ListView class="list-group" [items]="countries" (itemTap)="onItemTapFirstList($event)"
+                        separatorColor="white">
+                        <ng-template let-country="item">
+                            <GridLayout rows="* auto" columns="*" class="list-group-item active" style="border:1;">
+                                <Image row="0" col="0" [src]="country.imageSrc"></Image>
+                                <StackLayout row="1" col="0" backgroundColor="white" class="list-group-item">
+                                    <Label class="list-group-item-heading" [text]="country.name"></Label>
+                                    <Label class="list-group-item-text"
+                                        [text]="'Continent: '+country.description"></Label>
+                                </StackLayout>
+                            </GridLayout>
+                        </ng-template>
+                    </ListView>
+                </StackLayout>
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+
+
+    <StackLayout *tabItem="{title: 'Progress'}">
+        <ScrollView orientation="vertical" (loaded)="onScrollLoaded($event)" (scroll)="onScroll($event)">
+            <StackLayout>
+                <StackLayout orientation="vertical" (loaded)="onScrollLoaded($event)" (scroll)="onScroll($event)">
+                    <ListView class="list-group" [items]="countries" (itemTap)="onItemTapFirstList($event)"
+                        separatorColor="white">
+                        <ng-template let-country="item">
+                            <GridLayout rows="* auto" columns="*" class="list-group-item active" style="border:1;">
+                                <Image row="0" col="0" [src]="country.imageSrc"></Image>
+                                <StackLayout row="1" col="0" backgroundColor="white" class="list-group-item">
+                                    <Label class="list-group-item-heading" [text]="country.name"></Label>
+                                    <Label class="list-group-item-text"
+                                        [text]="'Continent: '+country.description"></Label>
+                                </StackLayout>
+                            </GridLayout>
+                        </ng-template>
+                    </ListView>
+                </StackLayout>
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+
+    <StackLayout *tabItem="{title: 'Review'}">
+        <ScrollView orientation="vertical" (loaded)="onScrollLoaded($event)" (scroll)="onScroll($event)">
+            <StackLayout>
+                <StackLayout orientation="vertical" (loaded)="onScrollLoaded($event)" (scroll)="onScroll($event)">
+                    <ListView class="list-group" [items]="countries" (itemTap)="onItemTapFirstList($event)"
+                        separatorColor="white">
+                        <ng-template let-country="item">
+                            <GridLayout rows="* auto" columns="*" class="list-group-item active" style="border:1;">
+                                <Image row="0" col="0" [src]="country.imageSrc"></Image>
+                                <StackLayout row="1" col="0" backgroundColor="white" class="list-group-item">
+                                    <Label class="list-group-item-heading" [text]="country.name"></Label>
+                                    <Label class="list-group-item-text"
+                                        [text]="'Continent: '+country.description"></Label>
+                                </StackLayout>
+                            </GridLayout>
+                        </ng-template>
+                    </ListView>
+                </StackLayout>
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+
+    <StackLayout *tabItem="{title: 'Done'}">
+        <ScrollView orientation="vertical" (loaded)="onScrollLoaded($event)" (scroll)="onScroll($event)">
+            <StackLayout>
+                <StackLayout orientation="vertical" (loaded)="onScrollLoaded($event)" (scroll)="onScroll($event)">
+                    <ListView class="list-group" [items]="countries" (itemTap)="onItemTapFirstList($event)"
+                        separatorColor="white">
+                        <ng-template let-country="item">
+                            <GridLayout rows="* auto" columns="*" class="list-group-item active" style="border:1;">
+                                <Image row="0" col="0" [src]="country.imageSrc"></Image>
+                                <StackLayout row="1" col="0" backgroundColor="white" class="list-group-item">
+                                    <Label class="list-group-item-heading" [text]="country.name"></Label>
+                                    <Label class="list-group-item-text"
+                                        [text]="'Continent: '+country.description"></Label>
+                                </StackLayout>
+                            </GridLayout>
+                        </ng-template>
+                    </ListView>
+                </StackLayout>
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+</TabView>
