@@ -22,7 +22,7 @@ export class AppController {
   }
 
   @Get( ':container/' )
-  public testDocker( @Param( 'container' ) container: string ) {
+  public testDocker( @Param( 'container' ) container ) {
 	this.dockerService.start( container );
   }
 

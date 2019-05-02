@@ -34,18 +34,15 @@ export class DockerService implements IAppInterface<IContainerConfig, DockerServ
 	}
 
 	public async status( id: string ): Promise<void> {
-		return;
+		const containerStats = await new Promise<void>( ( res, rej ) => this.docker.getContainer( id ).stats( id ) );
+		return containerStats;
 	}
 	public async stop( id: string ): Promise<void> {
-		return;
+		const containerStop = await new Promise<void>( ( res, rej ) => this.docker.getContainer( id ).stop( id ) );
+		return containerStop;
 	}
 
 	public async get( id: string ) {
-		this.docker.listContainers( ( err, containers ) => {
-			containers.forEach( containerInfo => {
-				this.docker.getContainer( containerInfo.Id );
-			} );
-		} );
-		return ;
+		return this.containers.getValue( ).get( id );
 	}
 }
