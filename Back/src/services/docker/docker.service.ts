@@ -1,48 +1,50 @@
 import { Injectable } from '@nestjs/common';
 import * as Docker from 'dockerode';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { IAppHelper, IAppInterface } from '../appInterface';
+import { Container, ContainerStats, ContainerCreateOptions } from 'dockerode';
+import { BehaviorSubject } from 'rxjs';
+import { IAppConfig, IAppServiceInterface } from '../app-interface';
 import { DockerServiceHelper } from './docker-service-helper';
+import { Dictionary } from 'lodash';
+import { AAppService } from './a-app-service';
 
-interface IContainerConfig {
-	Image: string;
-	AttachStdin: boolean;
-	AttachStdout: boolean;
-	AttachStderr: boolean;
-	Tty: boolean;
-	Cmd: any[];
-	OpenStdin: boolean;
-	StdinOnce: boolean;
+export interface IContainerConfig extends IAppConfig {
+	mountPoints?: Dictionary<string>;
 }
 
 @Injectable()
-export class DockerService implements IAppInterface<IContainerConfig, DockerServiceHelper> {
+export class DockerService extends AAppService implements IAppServiceInterface<DockerServiceHelper, IContainerConfig, ContainerStats> {
 	private readonly docker = new Docker();
-	private readonly containers = new BehaviorSubject<ReadonlyMap<string, IAppHelper>>( new Map<string, IAppHelper>() );
+	private readonly containers = new BehaviorSubject<ReadonlyMap<string, DockerServiceHelper | undefined>>( new Map<string, DockerServiceHelper | undefined>() );
+	
+	public constructor() { super( 'docker' ); }
+	
+	private castConfig(config: IContainerConfig, containerName: string): ContainerCreateOptions {
+		const configOption: ContainerCreateOptions = { Image: config.name, name: containerName } ;
+		return configOption;
+	}
 
 	public async start( config: IContainerConfig ) {
-		const containerInfos = await new Promise<Docker.Container>(
+		const helperId = this.genId();
+		const containerInfos = await new Promise<Container>(
 			( res, rej ) => this.docker.createContainer(
-				config,
+				this.castConfig( config, helperId ),
 				( err, out ) => err ? rej( err ) : res( out ) ) );
-		const id = 'foobarqux';
-		const helper = new DockerServiceHelper( this, id, containerInfos );
+		const helper = new DockerServiceHelper( this, helperId, containerInfos );
 		const newMap = new Map( this.containers.value );
-		newMap.set( id, helper );
+		newMap.set( helperId, helper );
 		this.containers.next( newMap );
 		return helper;
 	}
 
-	public async status( id: string ): Promise<void> {
-		const containerStats = await new Promise<void>( ( res, rej ) => this.docker.getContainer( id ).stats( id ) );
+	public async status( id: string ): Promise<ContainerStats> {
+		const containerStats = this.docker.getContainer( id ).stats();
 		return containerStats;
 	}
 	public async stop( id: string ): Promise<void> {
-		const containerStop = await new Promise<void>( ( res, rej ) => this.docker.getContainer( id ).stop( id ) );
-		return containerStop;
+		await this.docker.getContainer( id ).stop();
 	}
-
-	public async get( id: string ) {
-		return this.containers.getValue( ).get( id );
+	public get( id: string ): DockerServiceHelper | undefined {
+		const containerInfos = this.containers.getValue().get( id );
+		return containerInfos;
 	}
 }

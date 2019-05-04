@@ -1,20 +1,20 @@
-import * as Docker from 'dockerode';
-import { IAppHelper, IAppInterface } from '../appInterface';
-import { DockerService } from './docker.service';
+import { ContainerStats, Container } from 'dockerode';
+import { IAppHelper } from '../app-interface';
+import { DockerService, IContainerConfig } from './docker.service';
 
-export class DockerServiceHelper implements IAppHelper {
+export class DockerServiceHelper implements IAppHelper<DockerService, IContainerConfig, ContainerStats> {
 
-	public constructor( service: DockerService , id: string , container: Docker.Container ) {
+	public constructor( service: DockerService , id: string , container: Container ) {
 		this.relatedService = service;
 		this.id = id;
 		this.container = container;
-	 }
+	}
 
-	public relatedService: IAppInterface<any, any>;
+	public relatedService: DockerService;
 
 	public id: string;
 
-	public container: Docker.Container;
+	public container: Container;
 
 	public async stop() {
 		return this.relatedService.stop( this.id ) ;
