@@ -1,12 +1,13 @@
-import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Inject } from '@nestjs/common';
 import {fromPairs} from 'lodash';
+import { Logger } from 'winston';
 
 import { first, map } from 'rxjs/operators';
 import { DockerService } from './services/docker/docker.service';
 
 @Controller( 'docker' )
 export class AppController {
-	public constructor( private readonly dockerService: DockerService ) { }
+	public constructor( @Inject('winston') private readonly logger: Logger, private readonly dockerService: DockerService ) { }
 
 	@Get()
 	public getHello(): string {
@@ -26,6 +27,7 @@ export class AppController {
 		@Param( 'version' ) version?: string ) {
 		const newContainerHelper = await this.dockerService.start( appName, version );
 		await newContainerHelper.container.start();
+		this.logger.info(`Started app ${appName} v${newContainerHelper.appConfig.version} with id ${newContainerHelper.id}`)
 		return { appId: newContainerHelper.id, container: newContainerHelper.container };
 	}
 

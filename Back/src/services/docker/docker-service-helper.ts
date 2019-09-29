@@ -16,10 +16,10 @@ export class DockerServiceHelper implements IAppHelper<DockerService, IAppConfig
 		public readonly container: Container ) {}
 
 	public async stop() {
-		return this.relatedService.stop( this.id ) ;
+		return this.container.stop();
 	}
 	public async status() {
-		return this.relatedService.status( this.id );
+		return this.container.stats();
 	}
 
 	public static optionsToName( { label, helperId, version }: IDockerServiceOptions ): string {
