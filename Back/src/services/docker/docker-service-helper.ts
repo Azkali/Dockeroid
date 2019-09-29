@@ -1,25 +1,36 @@
-import { ContainerStats, Container } from 'dockerode';
-import { IAppHelper } from '../app-interface';
-import { DockerService, IContainerConfig } from './docker.service';
+import { Container, ContainerStats } from 'dockerode';
+import { IAppConfig, IAppHelper } from '../app-interface';
+import { DockerService } from './docker.service';
 
-export class DockerServiceHelper implements IAppHelper<DockerService, IContainerConfig, ContainerStats> {
+export interface IDockerServiceOptions {
+	label: string;
+	version: string;
+	helperId: string;
+}
+export class DockerServiceHelper implements IAppHelper<DockerService, IAppConfig, ContainerStats> {
 
-	public constructor( service: DockerService , id: string , container: Container ) {
-		this.relatedService = service;
-		this.id = id;
-		this.container = container;
-	}
-
-	public relatedService: DockerService;
-
-	public id: string;
-
-	public container: Container;
+	public constructor(
+		public readonly relatedService: DockerService,
+		public readonly id: string,
+		public readonly appConfig: IAppConfig,
+		public readonly container: Container ) {}
 
 	public async stop() {
 		return this.relatedService.stop( this.id ) ;
 	}
 	public async status() {
 		return this.relatedService.status( this.id );
+	}
+
+	public static optionsToName( { label, helperId, version }: IDockerServiceOptions ): string {
+		return `${label}__${version}__${helperId}`;
+	}
+	public static nameToOptions( name: string ): IDockerServiceOptions {
+		const match = name.match( /^\/?(.+?)__(.+?)__(.+?)$/ );
+		if ( !match ) {
+			throw new Error( 'Invalid parsed name' );
+		}
+		const [, label, version, helperId] = match;
+		return { label, version, helperId };
 	}
 }

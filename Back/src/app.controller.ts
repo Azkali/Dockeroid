@@ -1,5 +1,7 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import {fromPairs} from 'lodash';
 
+import { first, map } from 'rxjs/operators';
 import { DockerService } from './services/docker/docker.service';
 
 @Controller( 'docker' )
@@ -40,7 +42,7 @@ export class AppController {
 		@Param( 'appId' ) appId: string,
 	) {
 		const containerStatus = await this.dockerService.stop( appId );
-		console.log( 'Stopped conainer with id ' + appId );
+		console.log( 'Stopped container with id ' + appId );
 		return containerStatus;
 	}
 
@@ -48,14 +50,20 @@ export class AppController {
 	public async getContainer(
 		@Param( 'appId' ) appId: string,
 	) {
-		const containerStatus = this.dockerService.get( appId );
-		return containerStatus;
+		const dockerHelper = this.dockerService.get( appId );
+		if ( !dockerHelper ) {
+			throw new NotFoundException();
+		}
+		return dockerHelper.appConfig;
 	}
 
 	@Get( 'list' )
 	public async listContainers() {
-		const containers = await this.dockerService.listContainers();
-		return containers;
+		return this.dockerService.containers.pipe(
+			first(),
+			map( containerHelperMap => fromPairs( [...containerHelperMap.entries()]
+				.map( ( [, helper] ) => [helper.id, helper.appConfig] ) ) ),
+		);
 	}
 
 	@Get( 'pull/:tag' )

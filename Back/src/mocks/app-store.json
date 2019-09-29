@@ -1,6 +1,6 @@
 [
 	{
-		"label": "vscode",
+		"appName": "vscode",
 		"type": "docker",
 		"version": [{
 			"image": "codercom/code-server:v2",
@@ -19,7 +19,7 @@
 		}] 
 	},
 	{
-		"label": "ubuntu18.04",
+		"appName": "ubuntu18.04",
 		"type": "docker",
 		"version": [{ "version": "0.0.1", "options": { "OpenStdin": true, "Tty": true, "AttachStderr": true, "AttachStdout": true, "AttachStdin": true } }]
 	}

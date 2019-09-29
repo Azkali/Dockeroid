@@ -5,7 +5,7 @@ export interface IAppVersion<TOptions extends {}> {
 }
 
 export interface IApp<TOptions extends {}> {
-	label: string;
+	appName: string;
 	type: string;
 	version: Array<IAppVersion<TOptions>>;
 	repository: string;

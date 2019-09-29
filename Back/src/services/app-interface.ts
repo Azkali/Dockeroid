@@ -1,6 +1,5 @@
 export interface IAppConfig {
-	name: string;
-	image: string;
+	appName: string;
 	version?: string;
 }
 
@@ -20,6 +19,7 @@ export interface IAppHelper<
 	TStatus> {
 	readonly relatedService: TService;
 	readonly id: string;
+	readonly appConfig: TConfig;
 
 	stop(): Promise<void>;
 	status(): Promise<TStatus>;
