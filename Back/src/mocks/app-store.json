@@ -1,0 +1,26 @@
+[
+	{
+		"label": "vscode",
+		"type": "docker",
+		"version": [{
+			"image": "codercom/code-server:v2",
+			"version": "0.0.1",
+			"options": {
+				"OpenStdin": true,
+				"Tty": true,
+				"AttachStderr": true,
+				"AttachStdout": true,
+				"AttachStdin": true,
+				"ExposedPorts": {"8080/tcp": {} },
+				"Hostconfig": {
+					"PortBindings": { "8080/tcp" : [{"HostPort" : "8080"}] }
+				}
+			}
+		}] 
+	},
+	{
+		"label": "ubuntu18.04",
+		"type": "docker",
+		"version": [{ "version": "0.0.1", "options": { "OpenStdin": true, "Tty": true, "AttachStderr": true, "AttachStdout": true, "AttachStdin": true } }]
+	}
+]

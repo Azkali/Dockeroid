@@ -1,5 +1,6 @@
 export interface IAppConfig {
 	name: string;
+	image: string;
 	version?: string;
 }
 
@@ -7,7 +8,7 @@ export interface IAppServiceInterface<
 	THelper extends IAppHelper<IAppServiceInterface<THelper, TConfig, TStatus>, TConfig, TStatus>,
 	TConfig extends IAppConfig,
 	TStatus> {
-	start( object: TConfig ): Promise<THelper>;
+	start( appName: string, version?: string ): Promise<THelper>;
 	stop( id: string ): Promise<void>;
 	status( id: string ): Promise<TStatus>;
 	get( id: string ): THelper | undefined;

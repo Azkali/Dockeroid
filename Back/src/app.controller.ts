@@ -1,51 +1,68 @@
-import { Controller, Get, Param, Response } from '@nestjs/common';
-import {
-  SubscribeMessage,
-  WebSocketGateway,
-  WebSocketServer,
-  WsResponse,
-} from '@nestjs/websockets';
+import { Controller, Get, Param } from '@nestjs/common';
 
-import { version } from 'punycode';
-import { Client, Server } from 'socket.io';
 import { DockerService } from './services/docker/docker.service';
-import { Container, ContainerCreateOptions } from 'dockerode';
-// import { Response } from 'express';
 
 @Controller( 'docker' )
-// @WebSocketGateway( 80, { namespace: 'events' } )
 export class AppController {
-  public constructor( private readonly dockerService: DockerService ) {
+	public constructor( private readonly dockerService: DockerService ) { }
 
-  }
+	@Get()
+	public getHello(): string {
+		return 'Wello Horld';
+	}
 
-  @Get()
-  public getHello(): string {
-	return 'ok';
-  }
+	@Get( 'start/:containerName' )
+	public async startContainer(
+		@Param( 'containerName' ) containerName: string,
+	) {
+		return this.startContainerWithVersion( containerName );
+	}
 
-  @Get( 'start/:containerName' )
-  public async startContainer(
-    @Param( 'containerName' ) containerName: string
-  ) {
-      return this.startContainerWithVersion(containerName);
-  }
+	@Get( 'start/:appName/:version?' )
+	public async startContainerWithVersion(
+		@Param( 'appName' ) appName: string,
+		@Param( 'version' ) version?: string ) {
+		const newContainerHelper = await this.dockerService.start( appName, version );
+		await newContainerHelper.container.start();
+		return { appId: newContainerHelper.id, container: newContainerHelper.container };
+	}
 
-  @Get( 'start/:containerName/v:version' )
-  public async startContainerWithVersion(
-	  @Param( 'containerName' ) containerName: string,
-	  @Param( 'version' ) version?: string ) {
-      console.log({containerName, version})
-  const newContainerHelper = await this.dockerService.start( { name: containerName, version } );
-  return { appId: newContainerHelper.id };
-  }
+	@Get( 'status/:appId' )
+	public async statusOfContainer(
+		@Param( 'appId' ) appId: string,
+	) {
+		const containerStatus = await this.dockerService.status( appId );
+		return containerStatus;
+	}
 
-  // @WebSocketServer()
-  // public server!: Server;
+	@Get( 'stop/:appId' )
+	public async stopContainer(
+		@Param( 'appId' ) appId: string,
+	) {
+		const containerStatus = await this.dockerService.stop( appId );
+		console.log( 'Stopped conainer with id ' + appId );
+		return containerStatus;
+	}
 
-  // @SubscribeMessage( 'events' )
-  // public handleEvent( client: Client, data: unknown ): WsResponse<unknown> {
-	// const event = 'events';
-	// return { event, data };
-  // }
+	@Get( 'get/:appId' )
+	public async getContainer(
+		@Param( 'appId' ) appId: string,
+	) {
+		const containerStatus = this.dockerService.get( appId );
+		return containerStatus;
+	}
+
+	@Get( 'list' )
+	public async listContainers() {
+		const containers = await this.dockerService.listContainers();
+		return containers;
+	}
+
+	@Get( 'pull/:tag' )
+	public async pullImage(
+		@Param( 'tag' ) tag: string,
+	) {
+		const pullHelper = await this.dockerService.pullImage( tag );
+		return pullHelper;
+	}
 }
