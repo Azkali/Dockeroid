@@ -59,6 +59,7 @@ export class AppController {
 		return dockerHelper.appConfig;
 	}
 
+	// TODO : list all containers not just first one
 	@Get( 'list' )
 	public async listContainers() {
 		return this.dockerService.containers.pipe(
@@ -66,13 +67,5 @@ export class AppController {
 			map( containerHelperMap => fromPairs( [...containerHelperMap.entries()]
 				.map( ( [, helper] ) => [helper.id, helper.appConfig] ) ) ),
 		);
-	}
-
-	@Get( 'pull/:tag' )
-	public async pullImage(
-		@Param( 'tag' ) tag: string,
-	) {
-		const pullHelper = await this.dockerService.pullImage( tag );
-		return pullHelper;
 	}
 }

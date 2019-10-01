@@ -19,8 +19,33 @@
 		}] 
 	},
 	{
-		"appName": "ubuntu18.04",
+		"appName": "ubuntu",
 		"type": "docker",
-		"version": [{ "version": "0.0.1", "options": { "OpenStdin": true, "Tty": true, "AttachStderr": true, "AttachStdout": true, "AttachStdin": true } }]
+		"version": [{
+			"image": "ubuntu:latest",
+			"version": "0.0.1", 
+			"options": { 
+				"OpenStdin": true, 
+				"Tty": true, 
+				"AttachStderr": true, 
+				"AttachStdout": true, 
+				"AttachStdin": true 
+			} 
+		}]
+	},
+	{
+		"appName": "alpine",
+		"type": "docker",
+		"version": [{
+			"image": "alpine:latest",
+			"version": "0.0.1", 
+			"options": { 
+				"OpenStdin": true, 
+				"Tty": true, 
+				"AttachStderr": true, 
+				"AttachStdout": true, 
+				"AttachStdin": true 
+			} 
+		}]
 	}
 ]

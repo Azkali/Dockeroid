@@ -3,12 +3,14 @@ import * as Docker from 'dockerode';
 import { Container, ContainerCreateOptions, ContainerStats } from 'dockerode';
 import { Dictionary } from 'lodash';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { Stream } from 'stream';
 import { IAppConfig, IAppServiceInterface } from '../app-interface';
 import { AppStoreService, IAppWithParams } from '../app-store/app-store.service';
 import { AAppService } from './a-app-service';
 import { DockerServiceHelper } from './docker-service-helper';
 
 const MANAGER = 'Dockeroid';
+type OnProgress = ( event: any ) => void;
 
 @Injectable()
 export class DockerService extends AAppService implements IAppServiceInterface<DockerServiceHelper, IAppConfig, ContainerStats> {
@@ -31,7 +33,7 @@ export class DockerService extends AAppService implements IAppServiceInterface<D
 						this.docker.getContainer( container.Id ),
 					);
 					this.containersSubject.value.set( helperId, helper );
-				}));
+				} ) );
 				this.containersSubject.next( this.containersSubject.value );
 			} )
 			.catch( err => console.error( err ) );
@@ -57,6 +59,9 @@ export class DockerService extends AAppService implements IAppServiceInterface<D
 	public async start( appName: string, version?: string ) {
 		const helperId = this.genId();
 		const appConfig = await this.appStoreService.getApp( appName, version ).toPromise();
+		if ( !this.imageExists( appConfig.image ) ) {
+			await this.pullImage( appConfig.image, {} );
+		}
 		const containerCreateOptions = this.castAppParamsToContainerConfig( appConfig, helperId );
 		console.log( `Starting container ${appConfig.appName} v${appConfig.version} with options`, containerCreateOptions );
 		const container = await new Promise<Container>(
@@ -70,19 +75,14 @@ export class DockerService extends AAppService implements IAppServiceInterface<D
 		return helper;
 	}
 
-	private async listContainers() {
+	private async listContainers(): Promise<Docker.ContainerInfo[]> {
 		const containers = await this.docker.listContainers();
 		return containers.filter( container => container.Labels.Manager === MANAGER );
 	}
 
-	public async pullImage( tag: string ) {
-		const pullHelper = await this.docker.pull( tag, {} );
-		return pullHelper;
-	}
-
 	public async status( id: string ): Promise<ContainerStats> {
-		const containerHelper = this.get(id);
-		if(!containerHelper) {
+		const containerHelper = this.get( id );
+		if ( !containerHelper ) {
 			throw new Error( `Unknown container ID ${id}` );
 		}
 		return containerHelper.container.stats();
@@ -99,5 +99,32 @@ export class DockerService extends AAppService implements IAppServiceInterface<D
 
 	public get( id: string ): DockerServiceHelper | undefined {
 		return this.containersSubject.value.get( id );
+	}
+
+	private async pullImage( image: string, options: {}, onProgress?: OnProgress ): Promise<Docker.Image> {
+		return new Promise( async ( res, rej ) => {
+			const imageWithTag = ( image.indexOf( ':' ) > 0 )
+			? image : `${image}:latest`;
+			console.log( `Trying to pull image ${imageWithTag}` );
+			this.docker.pull( imageWithTag, { options }, ( err, stream: Stream ) => {
+				if ( err ) {
+					rej( err );
+				}
+				if ( !stream ) {
+					throw new Error( `Image '${imageWithTag}' doesn't exists` );
+				}
+				this.docker.modem.followProgress( stream, ( err: any, out: any ) => {
+					if ( err ) {
+						rej( err );
+					}
+					res( this.docker.getImage( imageWithTag ) );
+				},                                onProgress );
+			} );
+		} );
+	}
+
+	private async imageExists( image: string ): Promise<boolean> {
+		const images = await this.docker.listImages( { filters: { reference: [image] }} );
+		return images.length > 0;
 	}
 }
