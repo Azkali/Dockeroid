@@ -59,7 +59,6 @@ export class AppController {
 		return dockerHelper.appConfig;
 	}
 
-	// TODO : list all containers not just first one
 	@Get( 'list' )
 	public async listContainers() {
 		return this.dockerService.containers.pipe(
