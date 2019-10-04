@@ -40,6 +40,8 @@
 
 [Github - Steam-on-docker](https://github.com/kritzsie/steam-on-docker)
 
+[Github - Steam + Nvidia](https://github.com/qury/docker-nvidia-steam)
+
 [Github - docker-ubuntu-vnc-desktop](https://github.com/fcwu/docker-ubuntu-vnc-desktop)
 
 [Docker Hub - steam](https://hub.docker.com/r/hectormolinero/steam)
