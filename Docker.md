@@ -18,6 +18,8 @@
 
 [Medium - HW accelerated apps on docker](https://medium.com/@pigiuz/hw-accelerated-gui-apps-on-docker-7fd424fe813e)
 
+[Github - nvidia + docker + steam](https://github.com/achernetsov/dockerized-gui-apps)
+
 [Medium - Example running on aws g2](https://medium.com/@pigiuz/setting-up-a-hw-accelerated-desktop-on-aws-g2-instances-4b58718a4541)
 
 [Reddit - HW accel + RDP + docker](https://www.reddit.com/r/docker/comments/971qj5/docker_rdp_gpu_avd_examples/)
@@ -32,10 +34,18 @@
 
 [Git - proton for docker](https://git.nixaid.com/arno/proton/src/branch/master/README.md)
 
-[Docker Hub - docker-wine](https://hub.docker.com/r/scottyhardy/docker-wine/)
+[Github - steamos-ubuntu](https://github.com/ShadowApex/steamos-ubuntu)
+
+[Github - steamos-container-creator](https://github.com/sharkwouter/steamos-container-creator)
+
+[Github - Steam-on-docker](https://github.com/kritzsie/steam-on-docker)
+
+[Github - docker-ubuntu-vnc-desktop](https://github.com/fcwu/docker-ubuntu-vnc-desktop)
 
 [Docker Hub - steam](https://hub.docker.com/r/hectormolinero/steam)
 
 [Docker Hub - ubuntu-steam](https://hub.docker.com/r/sassmann/ubuntu-steam)
+
+[Docker Hub - docker-wine](https://hub.docker.com/r/scottyhardy/docker-wine/)
 
 [Medium - running GUI apps inside docker](https://medium.com/@SaravSun/running-gui-applications-inside-docker-containers-83d65c0db110)
