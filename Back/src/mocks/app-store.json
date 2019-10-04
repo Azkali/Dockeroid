@@ -2,50 +2,139 @@
 	{
 		"appName": "vscode",
 		"type": "docker",
-		"version": [{
-			"image": "codercom/code-server:v2",
-			"version": "0.0.1",
-			"options": {
-				"OpenStdin": true,
-				"Tty": true,
-				"AttachStderr": true,
-				"AttachStdout": true,
-				"AttachStdin": true,
-				"ExposedPorts": {"8080/tcp": {} },
-				"Hostconfig": {
-					"PortBindings": { "8080/tcp" : [{"HostPort" : "8080"}] }
+		"version": [
+			{
+				"image": "codercom/code-server:v2",
+				"version": "0.0.1",
+				"options": {
+					"OpenStdin": true,
+					"Tty": true,
+					"AttachStderr": true,
+					"AttachStdout": true,
+					"AttachStdin": true,
+					"ExposedPorts": {
+						"8080/tcp": {}
+					},
+					"PortBindings": {
+						"8080/tcp": [
+							{
+								"HostPort": "8080"
+							}
+						]
+					}
 				}
 			}
-		}] 
+		]
 	},
 	{
 		"appName": "ubuntu",
 		"type": "docker",
-		"version": [{
-			"image": "ubuntu:latest",
-			"version": "0.0.1", 
-			"options": { 
-				"OpenStdin": true, 
-				"Tty": true, 
-				"AttachStderr": true, 
-				"AttachStdout": true, 
-				"AttachStdin": true 
-			} 
-		}]
+		"version": [
+			{
+				"image": "ubuntu:latest",
+				"version": "0.0.1",
+				"options": {
+					"OpenStdin": true,
+					"Tty": true,
+					"AttachStderr": true,
+					"AttachStdout": true,
+					"AttachStdin": true
+				}
+			}
+		]
 	},
 	{
 		"appName": "alpine",
 		"type": "docker",
-		"version": [{
-			"image": "alpine:latest",
-			"version": "0.0.1", 
-			"options": { 
-				"OpenStdin": true, 
-				"Tty": true, 
-				"AttachStderr": true, 
-				"AttachStdout": true, 
-				"AttachStdin": true 
-			} 
-		}]
+		"version": [
+			{
+				"image": "alpine:latest",
+				"version": "0.0.1",
+				"options": {
+					"OpenStdin": true,
+					"Tty": true,
+					"AttachStderr": true,
+					"AttachStdout": true,
+					"AttachStdin": true
+				}
+			}
+		]
+	},
+	{
+		"appName": "steam-os",
+		"type": "docker",
+		"version": [
+			{
+				"image": "azkali/steam-os",
+				"version": "0.0.1",
+				"options": {
+					"OpenStdin": true,
+					"Tty": true,
+					"AttachStderr": true,
+					"AttachStdout": true,
+					"AttachStdin": true,
+					"ExposedPorts": {
+						"3322/tcp": {},
+						"3389/tcp": {},
+						"4380/tcp": {},
+						"8080/tcp": {},
+						"27036/tcp": {},
+						"27037/tcp": {}
+					},
+					"HostConfig": {
+						"PortBindings": {
+							"80/tcp": [
+								{
+									"HostPort": "8080"
+								}
+							],
+							"3322/tcp": [
+								{
+									"HostPort": "3322"
+								}
+							],
+							"3389/tcp": [
+								{
+									"HostPort": "3389"
+								}
+							],
+							"4380/tcp": [
+								{
+									"HostPort": "4380"
+								}
+							],
+							"27036/tcp": [
+								{
+									"HostPort": "27036"
+								}
+							],
+							"27037/tcp": [
+								{
+									"HostPort": "27037"
+								}
+							]
+						},
+						"Env": [
+							"TZ=Europe/Paris",
+							"ALSADEV=hw:2,0",
+							"RELATIVE_URL_ROOT=ubuntu"
+						],
+						"Binds": [
+							"/dev/shm:/dev/shm",
+							"/etc/machine-id:/etc/machine-id",
+							"/run/user/$UID/pulse/native:/tmp/pulse",
+							"/tmp/.X11-unix:/tmp/.X11-unix",
+							"/etc/localtime:/etc/localtime:ro"
+						]
+					},
+					"Shm-size": "2g",
+					"Restart": "unless-stopped",
+					"Device": [
+						"/dev/dri",
+						"/dev/snd"
+					]
+				}
+			}
+		]
 	}
 ]
