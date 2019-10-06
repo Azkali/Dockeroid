@@ -1,5 +1,5 @@
 import { Container, ContainerStats } from 'dockerode';
-import { IAppConfig, IAppHelper } from '../app-interface';
+import { IAppConfig, IAppHelper } from '../../services/app-interface';
 import { DockerService } from './docker.service';
 
 export interface IDockerServiceOptions {

@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import * as Docker from 'dockerode';
 import { Container, ContainerCreateOptions, ContainerStats } from 'dockerode';
-import { Dictionary } from 'lodash';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Stream } from 'stream';
-import { IAppConfig, IAppServiceInterface } from '../app-interface';
-import { AppStoreService, IAppWithParams } from '../app-store/app-store.service';
-import { AAppService } from './a-app-service';
+
 import { DockerServiceHelper } from './docker-service-helper';
+import { IAppServiceInterface, IAppConfig } from '../../services/app-interface';
+import { AAppService } from '../../services/a-app-service';
+import { AppStoreService, IAppWithParams } from '../../global/app-store/app-store.service';
 
 const MANAGER = 'Dockeroid';
 type OnProgress = ( event: any ) => void;

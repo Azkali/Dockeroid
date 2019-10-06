@@ -3,7 +3,7 @@ import {fromPairs} from 'lodash';
 import { Logger } from 'winston';
 
 import { first, map } from 'rxjs/operators';
-import { DockerService } from './services/docker/docker.service';
+import { DockerService } from '../docker/docker.service';
 
 @Controller( 'docker' )
 export class AppController {
