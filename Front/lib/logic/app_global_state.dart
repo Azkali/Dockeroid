@@ -1,0 +1,3 @@
+class AppGlobalState{
+	String baseUrl;
+}
