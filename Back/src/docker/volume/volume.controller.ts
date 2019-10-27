@@ -1,4 +1,10 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 
 @Controller('volume')
-export class VolumeController {}
+export class VolumeController {
+
+	@Get('mount')
+	public mountVolume() {
+
+	}
+}
