@@ -1,8 +1,10 @@
+import 'dart:convert';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class ServerConfig {
-	int _id = 0;
+	int _id;
 	int get id {
 		return this._id;
 	}
@@ -83,7 +85,6 @@ class ServerConfig {
 
 	Map<String, dynamic> toMap(){
 		return {
-			'id': this._id,
 			'label': this.label,
 			'scheme': this.uri.scheme,
 			'host': this.uri.host,
@@ -95,7 +96,7 @@ class ServerConfig {
 	Future<void> save() async {
 		final db = await ServerConfig._database;
 
-		if(this._id != 0){
+		if(this._id != null){
 			await db.update(
 				'servers',
 				this.toMap(),
@@ -112,7 +113,7 @@ class ServerConfig {
 	}
 
 	Future<void> remove() async {
-		if(this._id == 0){
+		if(this._id == null){
 			throw RangeError.value(0, 'id');
 		}
 		final db = await ServerConfig._database;

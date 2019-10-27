@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:dockeroid/logic/app_descriptor.dart';
 import 'package:dockeroid/logic/app_info.dart';
+import 'package:dockeroid/logic/preferences.dart';
 import 'package:dockeroid/logic/server_config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -21,7 +22,6 @@ class StatusWidget extends StatefulWidget {
 }
 
 class _StatusWidgetState extends State<StatusWidget> {
-	static final String currentConfigKey = 'currentConfig';
 
 	String endpoint = '/docker/list';
 	List<AppInfo> _apps = [];
@@ -33,24 +33,15 @@ class _StatusWidgetState extends State<StatusWidget> {
 	void initState() {
 		super.initState();
 
-		SharedPreferences.getInstance().then((prefs) async {
-			final configId = prefs.getInt(_StatusWidgetState.currentConfigKey) ?? null;
-			if(configId != null){
-				setState(() {
-					this.loading = true;
-				});
-				print('Restoring server config $configId');
-				final config = await ServerConfig.findConfig(configId);
-				if(config != null){
-					setState(() {
-						this.currentConfig = config;
-					});
-				} else {
-					print('Server config $configId restoration failed, clear the preference');
-					await prefs.remove(_StatusWidgetState.currentConfigKey);
-				}
-			}
-		});
+		this.loading = true;
+		Preferences.getServerConfig().then((config){
+			setState(() {
+				this.loading = false;
+				this.currentConfig = config;
+			});
+		}).catchError((e) => setState(() {
+			this.loading = false;
+		}));
 	}
 
 	Future<List<AppInfo>> _fetchCurrentContainers(BuildContext context) async  {
@@ -182,8 +173,7 @@ class _StatusWidgetState extends State<StatusWidget> {
 				setState((){
 					this.currentConfig = server;
 				});
-				final prefs = await SharedPreferences.getInstance();
-				prefs.setInt(_StatusWidgetState.currentConfigKey, server.id);
+				await Preferences.setServerConfig(server);
 			}));
 	}
 

@@ -2,19 +2,19 @@ import 'package:dockeroid/logic/server_config.dart';
 import 'package:flutter/material.dart';
 
 class ServerFormModal {
-	static Future<dynamic> openForm(BuildContext scaffoldContext, [ServerConfig formData]){
+	static Future<dynamic> openForm(BuildContext scaffoldContext, void Function() onChanged, [ServerConfig formData]){
 		return showDialog(
 			context: scaffoldContext,
 			builder: (dialogContext) => AlertDialog(
-				content: ServerForm(scaffoldContext, formData)));
+				content: ServerForm(onChanged, formData)));
 	}
 }
 
 class ServerForm extends StatefulWidget {
-	final BuildContext scaffoldContext;
 	final ServerConfig serverConfig;
+	final void Function() onChanged;
 
-	ServerForm(this.scaffoldContext, this.serverConfig);
+	ServerForm(this.onChanged, this.serverConfig);
 
 	@override
 	_ServerFormState createState() => _ServerFormState();
@@ -107,10 +107,6 @@ class _ServerFormState extends State<ServerForm> {
 								if (_formKey.currentState.validate()) {
 									// If the form is valid, display a snackbar. In the real world,
 									// you'd often call a server or save the information in a database.
-
-									Scaffold
-										.of(this.widget.scaffoldContext)
-										.showSnackBar(SnackBar(content: Text('Saving')));
 									Navigator.of(dialogContext, rootNavigator: true).pop('dialog');
 
 									final label = this._labelController.text;
@@ -122,12 +118,18 @@ class _ServerFormState extends State<ServerForm> {
 									);
 									ServerConfig configToSave;
 									if(this.widget.serverConfig == null){
+										print('Creating new config');
 										configToSave = new ServerConfig(label, uri);
 									} else {
+										print('Updating config ${this.widget.serverConfig.id}');
+										configToSave = this.widget.serverConfig;
 										configToSave.label = label;
 										configToSave.uri = uri;
 									}
 									await configToSave.save();
+									print('Persisted config with id ${configToSave.id}');
+
+									this.widget.onChanged();
 								}
 							}))]));
 	}
