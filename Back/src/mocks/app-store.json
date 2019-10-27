@@ -24,7 +24,8 @@
 					}
 				}
 			}
-		]
+		],
+		"volumes": []
 	},
 	{
 		"appName": "ubuntu",
