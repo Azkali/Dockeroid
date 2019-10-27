@@ -31,7 +31,8 @@ export class AppStoreService {
 		return resolve( this.configService.get( 'LOCAL_STORAGE' ), 'repository.json' );
 	}
 
-	private readonly repoIndex = new BehaviorSubject<Array<IApp<IAppVersion<any>>>>( [] );
+	private readonly repoIndexSubject = new BehaviorSubject<Array<IApp<IAppVersion<any>>>>( [] );
+	public readonly repoIndex = this.repoIndexSubject.asObservable();
 
 	// private readonly repositories = new BehaviorSubject<IRepository[]>( [] )
 	// 	.pipe( switchMap( () => {
@@ -72,8 +73,8 @@ export class AppStoreService {
 	// 	} );
 
 	public constructor( private readonly configService: ConfigService ) {
-		this.repoIndex.subscribe( index => console.log( index ) );
-		this.repoIndex.next(require('../../mocks/app-store.json'));
+		this.repoIndexSubject.subscribe( index => console.log( index ) );
+		this.repoIndexSubject.next(require('../../mocks/app-store.json'));
 	}
 
 	public update() {
@@ -81,7 +82,7 @@ export class AppStoreService {
 	}
 
 	public addRepo( label: string, url: string ) {
-		return this.repoIndex.subscribe( index => index.values );
+		return this.repoIndexSubject.subscribe( index => index.values );
 	}
 
 	public replaceRepo( label: string, url: string ) {
@@ -90,11 +91,11 @@ export class AppStoreService {
 	}
 
 	public removeRepo( label: string ) {
-		return this.repoIndex.unsubscribe();
+		return this.repoIndexSubject.unsubscribe();
 	}
 
 	public getApp( name: string, version?: string ) {
-		return this.repoIndex
+		return this.repoIndexSubject
 			.pipe(
 				first(),
 				map( repoIndex => {
