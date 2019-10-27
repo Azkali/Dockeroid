@@ -1,16 +1,15 @@
 import 'package:dockeroid/logic/docker_app_info.dart';
 
-enum EAppType{
-	Docker
-}
+import 'app_descriptor.dart';
 
 class AppInfo {
 	final String key;
 	final String appName;
 	final String version;
 	final EAppType type;
+	final AppDescriptor appDescriptor;
 
-	const AppInfo({this.key, this.type, this.appName, this.version});
+	const AppInfo({this.key, this.type, this.appName, this.version, this.appDescriptor});
 
 	factory AppInfo.fromJson(String key, dynamic content){
 		final type = content['type'];

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import './widgets/status.dart';
-import 'logic/app_global_state.dart';
 
 void main() => runApp(MyApp());
 
@@ -13,8 +12,6 @@ Dark turquoise: 1A5D66
 Red: D25454
 Pink: FF8CC5
 */
-
-final globalState = AppGlobalState();
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.

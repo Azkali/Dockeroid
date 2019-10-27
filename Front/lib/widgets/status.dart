@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:dockeroid/logic/app_descriptor.dart';
 import 'package:dockeroid/logic/app_info.dart';
+import 'package:dockeroid/logic/server_config.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 
 import '../main.dart';
+import 'app_form/app_form.dart';
 import 'menu.dart';
 
 class StatusWidget extends StatefulWidget {
@@ -20,40 +24,50 @@ class _StatusWidgetState extends State<StatusWidget> {
 	List<AppInfo> _apps = [];
 	bool loading = false;
 	Timer timer;
+	ServerConfig currentConfig;
 
-	_StatusWidgetState(){
-		this._resetTimerRefresh();
-	}
-
-	Future<List<AppInfo>> _fetchCurrentContainers() async  {
+	Future<List<AppInfo>> _fetchCurrentContainers(BuildContext context) async  {
 		this.setState((){
 			this.loading = true;
 		});
-		await new Future.delayed(const Duration(seconds: 2));
-		final response = await http.get('${globalState.baseUrl}/docker/list');
+		final response = await _get(context, 'docker/list');
 		final entries = json.decode(response.body) as Map<String, dynamic>;
 		return entries.entries.map((entry) => AppInfo.fromJson(entry.key, entry.value)).toList();
 	}
 
-	void _resetTimerRefresh(){
-		this.timer?.cancel();
-		this.timer = Timer.periodic(Duration(seconds: 15), (Timer t) => this._updateCurrentContainers());
+	Future<Response> _get(BuildContext context, String url) async {
+		try {
+			final response = await get(this.currentConfig.resolve(url));
+			return response;
+		} on SocketException catch(e){
+			Scaffold.of(context).showSnackBar(SnackBar(content:Text('An errror occured')));
+		}
 	}
 
-	Future<void> _updateCurrentContainers() async {
-		final apps = await this._fetchCurrentContainers();
-		this._resetTimerRefresh();
+	void _resetTimerRefresh(BuildContext context){
+		this.timer?.cancel();
+		this.timer = Timer.periodic(Duration(seconds: 15), (Timer t) => this._updateCurrentContainers(context));
+	}
+
+	Future<List<AppInfo>> _updateCurrentContainers(BuildContext context) async {
+		final apps = await this._fetchCurrentContainers(context);
+		this._resetTimerRefresh(context);
 		this.setState((){
 			this._apps = apps;
 			this.loading = false;
 		});
+		return apps;
 	}
 	
-	Future<void> _stopApp(AppInfo appInfo) async {
+	Future<void> _stopApp(BuildContext context, AppInfo appInfo) async {
 		this.setState((){
 			this.loading = true;
 		});
-		await http.get('${globalState.baseUrl}/docker/stop/${appInfo.key}');
+		try {
+			await _get(context, 'docker/stop/${appInfo.key}');
+		} on SocketException catch(e){
+
+		}
 		this.setState((){
 			this.loading = false;
 		});
@@ -71,72 +85,73 @@ class _StatusWidgetState extends State<StatusWidget> {
 			appBar: AppBar(
 				// Here we take the value from the MyHomePage object that was created by
 				// the App.build method, and use it to set our appbar title.
-				title: Text("Currently running applications"),
+				title: Text("Running apps"),
 				actions: <Widget>[
 					Center(child: this.loading ? InkWell(
 						child: CircularProgressIndicator(
 							backgroundColor: Colors.blue,
 						),
-					) : InkWell(
+					) : Builder(builder: (context) => InkWell(
 						child: Icon(Icons.refresh),
-						onTap: () => this._updateCurrentContainers(),
-					)),
+						onTap: () => this._updateCurrentContainers(context),
+					))),
 					SizedBox(width: 10),
 				],
 
 			),
-			body: Center(
+			body: Builder(builder: (context) => Center(
 				// Center is a layout widget. It takes a single child and positions it
 				// in the middle of the parent.
-				child: ListView.builder(
-					itemBuilder: (context, i){
-						final runningAppInfos = this._apps[i];
-						final key = Key(runningAppInfos.key);
-						return Dismissible(
-							key: key,
-							onDismissed: (direction) async {
-								print('Dismissed: $i, $direction');
-								if(direction == DismissDirection.endToStart){
-									print('Killing app ${runningAppInfos.appName}');
-									await this._stopApp(runningAppInfos);
-									await this._updateCurrentContainers();
-								}
-							},
-							child: Row(
-								children: [
-									Text(runningAppInfos.appName, style: TextStyle(fontSize: 25),),
-									Text(runningAppInfos.version),
-									Text(runningAppInfos.type == EAppType.Docker ? "Docker" : 'Unknown'),
-								],
-							),
-							background: Container(),
-							secondaryBackground: Container(
-								//padding: const EdgeInsets.only(right: 12),
-								alignment: Alignment.centerRight,
-								color: redColor,
-								child: Row(
-									mainAxisSize: MainAxisSize.min,
-									children: const <Widget>[
-										Padding(
-											padding: const EdgeInsets.only(right: 8),
-											child: Text('Stop the app', style: TextStyle(color: Colors.white))
-										),
-										Icon(Icons.cancel, color: Colors.white,)
-									],
-								),
-							),
-						);
-					},
-					itemCount: this._apps.length,
-				),
-			),
+				child: this.currentConfig == null ?
+					Text('Please select a server from the menu') :
+					FutureBuilder(
+						future: this._updateCurrentContainers(context),
+						builder: (context, snapshot){
+							// Save the context for http query fails notifications
+							this._resetTimerRefresh(context);
+							return ListView.builder(
+								itemBuilder: (context, i){
+
+									// Get the app of the iteration
+									final runningAppInfos = this._apps[i];
+									final key = Key(runningAppInfos.key);
+									return Dismissible(
+										key: key,
+										onDismissed: (direction) async {
+											if(direction == DismissDirection.endToStart){
+												print('Killing app ${runningAppInfos.appName}');
+												await this._stopApp(context, runningAppInfos);
+												await this._updateCurrentContainers(context);
+											}
+										},
+										child: Row(
+											children: [
+												Text(runningAppInfos.appName, style: TextStyle(fontSize: 25),),
+												Text(runningAppInfos.version),
+												Text(runningAppInfos.type == EAppType.Docker ? "Docker" : 'Unknown')]),
+										background: Container(),
+										secondaryBackground: Container(
+											//padding: const EdgeInsets.only(right: 12),
+											alignment: Alignment.centerRight,
+											color: redColor,
+											child: Row(
+												mainAxisSize: MainAxisSize.min,
+												children: const <Widget>[
+													Padding(
+														padding: const EdgeInsets.only(right: 8),
+														child: Text('Stop the app', style: TextStyle(color: Colors.white))),
+													Icon(Icons.cancel, color: Colors.white,)
+												])));
+								},
+								itemCount: this._apps.length);
+						}))),
 			floatingActionButton: FloatingActionButton(
-				onPressed: () => print('Pressed'),
+				onPressed: this.currentConfig == null ? null : () => Navigator.push(context, MaterialPageRoute(builder: (context) => AppFormWidget(this.currentConfig))),
 				tooltip: 'Increment',
-				child: Icon(Icons.add),
-			), // This trailing comma makes auto-formatting nicer for build methods.
-			drawer: Menu(),
-		);
+				child: Icon(Icons.add)),
+			drawer: Menu(this.currentConfig, (server) => setState((){
+				this.currentConfig = server;
+			})));
 	}
 
 	@override
