@@ -5,6 +5,7 @@ import { resolve } from 'path';
 
 import { AppStoreService } from './app-store/app-store.service';
 import { ConfigService } from './config/config.service';
+import { ListController } from './list/list.controller';
 
 @Global()
 @Module({
@@ -33,6 +34,7 @@ import { ConfigService } from './config/config.service';
 	providers: [
 		AppStoreService,
 		{ provide: ConfigService, useValue: new ConfigService('.env') },
-	]
+	],
+	controllers: [ListController]
 })
 export class GlobalModule {}
