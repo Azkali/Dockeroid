@@ -3,6 +3,9 @@ import 'package:sqflite/sqflite.dart';
 
 class ServerConfig {
 	int _id = 0;
+	int get id {
+		return this._id;
+	}
 	String label;
 
 	Uri uri;
@@ -55,6 +58,23 @@ class ServerConfig {
 
 		// Convert the List<Map<String, dynamic> into a List<ServerConfig>.
 		return List.generate(maps.length, (i) => ServerConfig._fromMap(maps[i]));
+	}
+
+	static Future<ServerConfig> findConfig(int id) async {
+		final db = await ServerConfig._database;
+
+		// Query the table for all the ServerConfig.
+		final List<Map<String, dynamic>> maps = await db.query(
+			'servers',
+			where: "id = ?",
+			whereArgs: [id],
+			limit: 1);
+
+		// Convert the List<Map<String, dynamic> into a List<ServerConfig>.
+		if(maps.length != 1){
+			return null;
+		}
+		return ServerConfig._fromMap(maps[0]);
 	}
 
 	String resolve([String path]) {

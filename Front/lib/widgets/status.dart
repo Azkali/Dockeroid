@@ -7,6 +7,7 @@ import 'package:dockeroid/logic/app_info.dart';
 import 'package:dockeroid/logic/server_config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
 import 'app_form/app_form.dart';
@@ -20,11 +21,37 @@ class StatusWidget extends StatefulWidget {
 }
 
 class _StatusWidgetState extends State<StatusWidget> {
+	static final String currentConfigKey = 'currentConfig';
+
 	String endpoint = '/docker/list';
 	List<AppInfo> _apps = [];
 	bool loading = false;
 	Timer timer;
 	ServerConfig currentConfig;
+
+	@override
+	void initState() {
+		super.initState();
+
+		SharedPreferences.getInstance().then((prefs) async {
+			final configId = prefs.getInt(_StatusWidgetState.currentConfigKey) ?? null;
+			if(configId != null){
+				setState(() {
+					this.loading = true;
+				});
+				print('Restoring server config $configId');
+				final config = await ServerConfig.findConfig(configId);
+				if(config != null){
+					setState(() {
+						this.currentConfig = config;
+					});
+				} else {
+					print('Server config $configId restoration failed, clear the preference');
+					await prefs.remove(_StatusWidgetState.currentConfigKey);
+				}
+			}
+		});
+	}
 
 	Future<List<AppInfo>> _fetchCurrentContainers(BuildContext context) async  {
 		this.setState((){
@@ -39,8 +66,10 @@ class _StatusWidgetState extends State<StatusWidget> {
 		try {
 			final response = await get(this.currentConfig.resolve(url));
 			return response;
-		} on SocketException catch(e){
+		} on SocketException catch (e) {
 			Scaffold.of(context).showSnackBar(SnackBar(content:Text('An errror occured')));
+
+			return null;
 		}
 	}
 
@@ -65,8 +94,8 @@ class _StatusWidgetState extends State<StatusWidget> {
 		});
 		try {
 			await _get(context, 'docker/stop/${appInfo.key}');
-		} on SocketException catch(e){
-
+		} on SocketException catch(e) {
+			Scaffold.of(context).showSnackBar(SnackBar(content:Text('An errror occured')));
 		}
 		this.setState((){
 			this.loading = false;
@@ -149,9 +178,13 @@ class _StatusWidgetState extends State<StatusWidget> {
 				onPressed: this.currentConfig == null ? null : () => Navigator.push(context, MaterialPageRoute(builder: (context) => AppFormWidget(this.currentConfig))),
 				tooltip: 'Increment',
 				child: Icon(Icons.add)),
-			drawer: Menu(this.currentConfig, (server) => setState((){
-				this.currentConfig = server;
-			})));
+			drawer: Menu(this.currentConfig, (server) async {
+				setState((){
+					this.currentConfig = server;
+				});
+				final prefs = await SharedPreferences.getInstance();
+				prefs.setInt(_StatusWidgetState.currentConfigKey, server.id);
+			}));
 	}
 
 	@override
