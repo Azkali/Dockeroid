@@ -18,11 +18,11 @@ class Preferences extends EventEmitter {
 	factory Preferences(){
 		if(Preferences._instance == null){
 			Preferences._instance = Preferences._internal();
-			Preferences._instance.on(Preferences.serverConfigChanged, Preferences._instance, (event, data){
-				print(event.toString());
-				print(event.eventData.toString());
-				print(data.toString());
-			});
+			// Preferences._instance.on(Preferences.serverConfigChanged, Preferences._instance, (event, data){
+			// 	print(event.toString());
+			// 	print(event.eventData.toString());
+			// 	print(data.toString());
+			// });
 		}
 		return Preferences._instance;
 	}

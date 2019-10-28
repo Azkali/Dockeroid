@@ -25,16 +25,10 @@ class _AppFormWidgetState extends State<AppFormWidget> {
 	}
 
 	Future<List<AppDescriptor>> _listApps() async {
-		final targetUri = this.widget.currentConfig.uri.resolve('app/list');
-		print(targetUri.toString());
-		final response = await get(targetUri);
-		print(response.body);
-		if(response.statusCode >= 200 && response.statusCode < 400){
-			final entries = json.decode(response.body) as List<dynamic>;
-			return entries.map((entry) => AppDescriptor.fromJson(entry)).toList();
-		} else {
-			throw new ClientException('Received invalid code ${response.statusCode}', targetUri);
-		}
+		return httpGet<List<AppDescriptor>>(
+			this.widget.currentConfig,
+			'app/list',
+			transform: (data) => (data as List<dynamic>).map((entry) => AppDescriptor.fromJson(entry)).toList());
 	}
 	
 	@override

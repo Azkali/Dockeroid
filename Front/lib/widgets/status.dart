@@ -46,7 +46,6 @@ class _StatusWidgetState extends State<StatusWidget> {
 			setState(() => this._refreshApps(false));
 		} else {
 			this._appsFuture = this._serverConfigFuture.then((config) async {
-				await Future.delayed(Duration(seconds: 2));
 				return AppInfo.fetch(config);
 			});
 		}
