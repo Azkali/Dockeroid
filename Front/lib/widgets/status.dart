@@ -155,13 +155,16 @@ class _StatusWidgetState extends State<StatusWidget> {
 									}
 								});
 						}}))),
-			floatingActionButton: FloatingActionButton(
+			floatingActionButton: Builder(builder: (actionButtonContext) => FloatingActionButton(
 				onPressed: () async {
 					final config = await this._serverConfigFuture;
-					Navigator.push(context, MaterialPageRoute(builder: (context) => AppFormWidget(config)));
+					Navigator.push(actionButtonContext, MaterialPageRoute(builder: (context) => AppFormWidget(config, (formScreenContext){
+						Navigator.pop(formScreenContext);
+						Scaffold.of(actionButtonContext).showSnackBar(SnackBar(content: Text('Application started'),));
+					})));
 				},
 				tooltip: 'Increment',
-				child: Icon(Icons.add)),
+				child: Icon(Icons.add))),
 			drawer: FutureBuilder(
 				future: this._serverConfigFuture,
 				builder: (context, snapshot){
