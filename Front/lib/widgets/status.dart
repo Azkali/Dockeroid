@@ -6,12 +6,14 @@ import 'package:dockeroid/logic/app_descriptor.dart';
 import 'package:dockeroid/logic/app_info.dart';
 import 'package:dockeroid/logic/preferences.dart';
 import 'package:dockeroid/logic/server_config.dart';
+import 'package:dockeroid/logic/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
 import 'app_form/app_form.dart';
+import 'list_with_context_menu.dart';
 import 'menu.dart';
 
 class StatusWidget extends StatefulWidget {
@@ -22,75 +24,74 @@ class StatusWidget extends StatefulWidget {
 }
 
 class _StatusWidgetState extends State<StatusWidget> {
-
-	String endpoint = '/docker/list';
-	List<AppInfo> _apps = [];
-	bool loading = false;
-	Timer timer;
-	ServerConfig currentConfig;
+	Timer _timer;
+	List<AppInfo> _lastApps;
+	Future<List<AppInfo>> _appsFuture;
+	Future<ServerConfig> _serverConfigFuture = Preferences().getServerConfig();
 
 	@override
 	void initState() {
 		super.initState();
 
-		this.loading = true;
-		Preferences.getServerConfig().then((config){
+		Preferences().on(Preferences.serverConfigChanged, this, (event, data){
 			setState(() {
-				this.loading = false;
-				this.currentConfig = config;
+				this._serverConfigFuture = Future.value(event.eventData);
+				this._appsFuture = null;
 			});
-		}).catchError((e) => setState(() {
-			this.loading = false;
-		}));
-	}
-
-	Future<List<AppInfo>> _fetchCurrentContainers(BuildContext context) async  {
-		this.setState((){
-			this.loading = true;
 		});
-		final response = await _get(context, 'docker/list');
-		final entries = json.decode(response.body) as Map<String, dynamic>;
-		return entries.entries.map((entry) => AppInfo.fromJson(entry.key, entry.value)).toList();
 	}
 
-	Future<Response> _get(BuildContext context, String url) async {
-		try {
-			final response = await get(this.currentConfig.resolve(url));
-			return response;
-		} on SocketException catch (e) {
-			Scaffold.of(context).showSnackBar(SnackBar(content:Text('An errror occured')));
-
-			return null;
+	void _refreshApps([bool doSetState = true]){
+		if(doSetState){
+			setState(() => this._refreshApps(false));
+		} else {
+			this._appsFuture = this._serverConfigFuture.then((config) async {
+				await Future.delayed(Duration(seconds: 2));
+				return AppInfo.fetch(config);
+			});
 		}
 	}
 
-	void _resetTimerRefresh(BuildContext context){
-		this.timer?.cancel();
-		this.timer = Timer.periodic(Duration(seconds: 15), (Timer t) => this._updateCurrentContainers(context));
+	void _resetTimerRefresh(){
+		this._timer?.cancel();
+		this._timer = Timer.periodic(Duration(seconds: 15), (Timer t) => this._refreshApps());
 	}
 
-	Future<List<AppInfo>> _updateCurrentContainers(BuildContext context) async {
-		final apps = await this._fetchCurrentContainers(context);
-		this._resetTimerRefresh(context);
-		this.setState((){
-			this._apps = apps;
-			this.loading = false;
-		});
-		return apps;
-	}
-	
-	Future<void> _stopApp(BuildContext context, AppInfo appInfo) async {
-		this.setState((){
-			this.loading = true;
-		});
-		try {
-			await _get(context, 'docker/stop/${appInfo.key}');
-		} on SocketException catch(e) {
-			Scaffold.of(context).showSnackBar(SnackBar(content:Text('An errror occured')));
-		}
-		this.setState((){
-			this.loading = false;
-		});
+	Widget _drawApps(BuildContext context, List<AppInfo> apps, ServerConfig serverConfig){
+		return ListWithContextMenu<AppInfo>( apps ?? [],
+			itemsWidgetFactory: (app) => ListTile(
+				title: Row(
+					crossAxisAlignment: CrossAxisAlignment.end,
+					children: [
+						Text(app.appName),
+						SizedBox(width: 5),
+						Text(app.key, style: TextStyle(
+							color: Theme.of(context).disabledColor,
+							fontSize: 12))]),
+				leading: CircleAvatar(child: app.icon != null ?
+					NetworkImage(app.icon) : 
+					Text(getInitials(app.appName))),
+				subtitle: Row(
+						children: [
+							Text('Version '),
+							Chip(label: Text(app.version)),
+							SizedBox(width: 8),
+							Text('Type '),
+							Chip(label: Text(getAppTypeLabel(app.type)))])),
+			menuItemsFactory: (app) => [
+				PopupMenuItem(
+					value: 'stop',
+					child: FlatButton(
+						onPressed: () async {
+							Navigator.pop(context);
+							print('Stopping app ${app.key}');
+							await app.stop(serverConfig);
+							this._refreshApps();
+						},
+						child: Row(
+							children: <Widget>[
+								Icon(Icons.stop),
+								Text("Stop")])))]);
 	}
 
 	@override
@@ -107,79 +108,79 @@ class _StatusWidgetState extends State<StatusWidget> {
 				// the App.build method, and use it to set our appbar title.
 				title: Text("Running apps"),
 				actions: <Widget>[
-					Center(child: this.loading ? InkWell(
-						child: CircularProgressIndicator(
-							backgroundColor: Colors.blue,
-						),
-					) : Builder(builder: (context) => InkWell(
-						child: Icon(Icons.refresh),
-						onTap: () => this._updateCurrentContainers(context),
-					))),
-					SizedBox(width: 10),
-				],
-
-			),
+					FlatButton(child: Icon(Icons.refresh), onPressed: this._refreshApps)]),
 			body: Builder(builder: (context) => Center(
 				// Center is a layout widget. It takes a single child and positions it
 				// in the middle of the parent.
-				child: this.currentConfig == null ?
-					Text('Please select a server from the menu') :
-					FutureBuilder(
-						future: this._updateCurrentContainers(context),
-						builder: (context, snapshot){
-							// Save the context for http query fails notifications
-							this._resetTimerRefresh(context);
-							return ListView.builder(
-								itemBuilder: (context, i){
+				child: FutureBuilder(
+					future: this._serverConfigFuture,
+					builder: (context, snapshot){
+						if(snapshot.connectionState != ConnectionState.done){
+							return CircularProgressIndicator();
+						}
 
-									// Get the app of the iteration
-									final runningAppInfos = this._apps[i];
-									final key = Key(runningAppInfos.key);
-									return Dismissible(
-										key: key,
-										onDismissed: (direction) async {
-											if(direction == DismissDirection.endToStart){
-												print('Killing app ${runningAppInfos.appName}');
-												await this._stopApp(context, runningAppInfos);
-												await this._updateCurrentContainers(context);
-											}
-										},
-										child: Row(
-											children: [
-												Text(runningAppInfos.appName, style: TextStyle(fontSize: 25),),
-												Text(runningAppInfos.version),
-												Text(runningAppInfos.type == EAppType.Docker ? "Docker" : 'Unknown')]),
-										background: Container(),
-										secondaryBackground: Container(
-											//padding: const EdgeInsets.only(right: 12),
-											alignment: Alignment.centerRight,
-											color: redColor,
-											child: Row(
-												mainAxisSize: MainAxisSize.min,
-												children: const <Widget>[
-													Padding(
-														padding: const EdgeInsets.only(right: 8),
-														child: Text('Stop the app', style: TextStyle(color: Colors.white))),
-													Icon(Icons.cancel, color: Colors.white,)
-												])));
-								},
-								itemCount: this._apps.length);
-						}))),
+						if(snapshot.data == null){
+							return Text('Please select a server.');
+						} else {
+							this._resetTimerRefresh();
+							this._refreshApps(false);
+
+							final ServerConfig serverConfig = snapshot.data;
+							return FutureBuilder(
+								future: this._appsFuture,
+								builder: (context, snapshot){
+									if(snapshot.connectionState != ConnectionState.done){
+										if(this._lastApps != null){
+											return Column(
+												mainAxisSize: MainAxisSize.max,
+												children: [
+													Container(child: LinearProgressIndicator(), height: 10),
+													Expanded(child: this._drawApps(context, this._lastApps, serverConfig))]);
+										} else {
+											return CircularProgressIndicator();
+										}
+									}
+
+									if(snapshot.hasError){
+										return Text('Oops, an error occured. ${snapshot.error.toString()}');
+									} else if(snapshot.data == null){
+										this._lastApps = null;
+										return Text('Oops');
+									} else {
+										// Save the context for http query fails notifications
+
+										final apps = snapshot.data as List<AppInfo>;
+										this._lastApps = apps;
+										return this._drawApps(context, apps, serverConfig);
+									}
+								});
+						}}))),
 			floatingActionButton: FloatingActionButton(
-				onPressed: this.currentConfig == null ? null : () => Navigator.push(context, MaterialPageRoute(builder: (context) => AppFormWidget(this.currentConfig))),
+				onPressed: () async {
+					final config = await this._serverConfigFuture;
+					Navigator.push(context, MaterialPageRoute(builder: (context) => AppFormWidget(config)));
+				},
 				tooltip: 'Increment',
 				child: Icon(Icons.add)),
-			drawer: Menu(this.currentConfig, (server) async {
-				setState((){
-					this.currentConfig = server;
-				});
-				await Preferences.setServerConfig(server);
-			}));
+			drawer: FutureBuilder(
+				future: this._serverConfigFuture,
+				builder: (context, snapshot){
+					if(snapshot.connectionState != ConnectionState.done){
+						return CircularProgressIndicator();
+					} else {
+						return Menu(snapshot.data, (server) async {
+							setState((){
+								this._serverConfigFuture = Future.value(server);
+							});
+							await Preferences().setServerConfig(server);
+						});
+					}
+				}));
 	}
 
 	@override
 	void dispose() {
-		this.timer?.cancel();
+		this._timer?.cancel();
 		super.dispose();
 	}
 }

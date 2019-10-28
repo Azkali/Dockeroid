@@ -1,8 +1,10 @@
 import 'package:dockeroid/logic/preferences.dart';
 import 'package:dockeroid/logic/server_config.dart';
+import 'package:dockeroid/logic/utils.dart';
 import 'package:flutter/material.dart';
 
 import '../../main.dart';
+import '../list_with_context_menu.dart';
 import 'server_form_modal.dart';
 
 class ServerManagerWidget extends StatefulWidget {
@@ -20,7 +22,7 @@ class _ServerManagerWidgetState extends State<ServerManagerWidget> {
 	void initState() {
 		super.initState();
 		this.serverConfigs = ServerConfig.getServerConfigs();
-		this.currentConfigId = Preferences.getServerConfigId();
+		this.currentConfigId = Preferences().getServerConfig().then((config) => config?.id);
 	}
 
 	@override
@@ -59,67 +61,55 @@ class _ServerManagerWidgetState extends State<ServerManagerWidget> {
 
 									final servers = snapshot.data[0] as List<ServerConfig>;
 									final defaultCondifId = snapshot.data[1] as int;
-									return ListView(
-										children: servers.map((serverConfig) => GestureDetector(
-											onTapUp: (tapInfos){
-												ServerFormModal.openForm(context, () => setState(() {
-													this.serverConfigs = ServerConfig.getServerConfigs();
-													Scaffold
-														.of(context)
-														.showSnackBar(SnackBar(content: Text('Server updated')));
-												}), serverConfig);
-											},
-											onDoubleTap: (){
-												Preferences.setServerConfig(serverConfig);
-												setState(() {
-													this.currentConfigId = Future.value(serverConfig.id);
-												});
-											},
-											onLongPressStart: (longPressInfos){
-												return showMenu(
-													items: <PopupMenuEntry>[
-														PopupMenuItem(
-															value: 'delete',
-															child: FlatButton(
-																onPressed: () async {
-																	Navigator.pop(context);
-																	Scaffold
-																		.of(context)
-																		.showSnackBar(SnackBar(content: Text('Server removed')));
-																	print('Removing config with id ${serverConfig.id}');
-																	await serverConfig.remove();
-																	setState(() {
-																		this.serverConfigs = ServerConfig.getServerConfigs();
-																	});
-																},
-																child: Row(
-																	children: <Widget>[
-																		Icon(Icons.delete),
-																		Text("Delete")])))],
-													context: context,
-													// From https://stackoverflow.com/a/54714628/4839162
-													position: RelativeRect.fromRect(
-														longPressInfos.globalPosition & Size(40, 40), // smaller rect, the touch area
-														// From https://stackoverflow.com/a/52319524/4839162
-														Offset.zero & MediaQuery.of(context).size// Bigger rect, the entire screen
-													),
-													);
-											},
-											child: ListTile(
-												title: Text(defaultCondifId == serverConfig.id ?
-													serverConfig.label + ' (default)' :
-													serverConfig.label),
-												subtitle: Text(serverConfig.resolve()),
+									return ListWithContextMenu<ServerConfig>(servers,
+										itemsWidgetFactory: (server) => ListTile(
+												title: Text(defaultCondifId == server.id ?
+													server.label + ' (default)' :
+													server.label),
+												subtitle: Text(server.resolve()),
 												leading: CircleAvatar(
-													child: Text(serverConfig.label
-														.splitMapJoin(
-															RegExp(r'(?:^|\W)(\w)'),
-															onMatch: (m) => m.group(1)[0].toUpperCase(),
-															onNonMatch: (m) => ''),
-													style: defaultCondifId == serverConfig.id ?
-														TextStyle(fontWeight: FontWeight.bold) :
-														null,)),
-												trailing: Icon(Icons.edit)))).toList());
+													child: Text(
+														getInitials(server.label),
+														style: defaultCondifId == server.id ?
+															TextStyle(fontWeight: FontWeight.bold) :
+															null)),
+												trailing: Icon(Icons.edit)),
+										menuItemsFactory: (server) => [
+											PopupMenuItem(
+												value: 'delete',
+												child: FlatButton(
+													onPressed: () async {
+														Navigator.pop(context);
+														Scaffold
+															.of(context)
+															.showSnackBar(SnackBar(content: Text('Server removed')));
+														print('Removing config with id ${server.id}');
+														await server.remove();
+														setState(() {
+															this.serverConfigs = ServerConfig.getServerConfigs();
+														});
+													},
+													child: Row(
+														children: <Widget>[
+															Icon(Icons.delete),
+															Text("Delete")])))],
+										onTap: (server, tapInfos){
+											ServerFormModal.openForm(context, () async {
+												Scaffold
+													.of(context)
+													.showSnackBar(SnackBar(content: Text('Server updated')));
+												setState(() {
+													this.serverConfigs = ServerConfig.getServerConfigs();
+												});
+												await Preferences().getServerConfig();
+											}, server);
+										},
+										onDoubleTap: (server){
+											Preferences().setServerConfig(server);
+											setState(() {
+												this.currentConfigId = Future.value(server.id);
+											});
+										});
 							}
 							return null; // unreachable
 					}))),

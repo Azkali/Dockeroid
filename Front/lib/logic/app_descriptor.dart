@@ -1,5 +1,3 @@
-import 'app_info.dart';
-
 enum EAppType{
 	Docker,
 	Qemu,
