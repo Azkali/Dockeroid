@@ -3,7 +3,6 @@ import 'package:dockeroid/logic/server_config.dart';
 import 'package:dockeroid/logic/utils.dart';
 import 'package:flutter/material.dart';
 
-import '../../main.dart';
 import '../list_with_context_menu.dart';
 import 'server_form_modal.dart';
 

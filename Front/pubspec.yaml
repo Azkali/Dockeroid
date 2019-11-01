@@ -20,10 +20,13 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.12.0+2
-  sqflite: any
-  shared_preferences: any
-  path: any
-  eventify: any
+  sqflite: ^1.1.7+1
+  shared_preferences: ^0.5.4+3
+  path: ^1.6.4
+  eventify: ^0.1.4
+  flutter_svg: ^0.14.3
+  flutter_markdown: ^0.3.0
+  smooth_star_rating: ^1.0.3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

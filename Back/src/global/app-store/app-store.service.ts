@@ -20,7 +20,6 @@ export interface IAppWithParams<TOptions extends {}> {
 	options: TOptions;
 	appName: string;
 	type: string;
-	repository: string;
 	image: string;
 }
 
@@ -107,7 +106,7 @@ export class AppStoreService {
 						version = '*';
 					}
 
-					const versionsOrdered = app.version
+					const versionsOrdered = app.versions
 						// Reject non matching versions
 						.filter( item => true ) // TODO: Semver matching
 						// Order by latest

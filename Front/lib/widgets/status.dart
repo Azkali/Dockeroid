@@ -1,18 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
-import 'package:dockeroid/logic/app_descriptor.dart';
 import 'package:dockeroid/logic/app_info.dart';
 import 'package:dockeroid/logic/preferences.dart';
 import 'package:dockeroid/logic/server_config.dart';
 import 'package:dockeroid/logic/utils.dart';
+import 'package:dockeroid/widgets/app_form/app_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../main.dart';
-import 'app_form/app_form.dart';
 import 'list_with_context_menu.dart';
 import 'menu.dart';
 
@@ -157,12 +151,9 @@ class _StatusWidgetState extends State<StatusWidget> {
 			floatingActionButton: Builder(builder: (actionButtonContext) => FloatingActionButton(
 				onPressed: () async {
 					final config = await this._serverConfigFuture;
-					Navigator.push(actionButtonContext, MaterialPageRoute(builder: (context) => AppFormWidget(config, (formScreenContext){
-						Navigator.pop(formScreenContext);
-						Scaffold.of(actionButtonContext).showSnackBar(SnackBar(content: Text('Application started'),));
-					})));
+					Navigator.push(actionButtonContext, MaterialPageRoute(builder: (context) => AppSelector(config)));
 				},
-				tooltip: 'Increment',
+				tooltip: 'Start an app',
 				child: Icon(Icons.add))),
 			drawer: FutureBuilder(
 				future: this._serverConfigFuture,

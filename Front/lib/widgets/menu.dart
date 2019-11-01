@@ -1,7 +1,6 @@
 import 'package:dockeroid/logic/server_config.dart';
 import 'package:flutter/material.dart';
 
-import '../main.dart';
 import 'servers_manager/servers_manager.dart';
 
 class Menu extends StatelessWidget {

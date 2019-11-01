@@ -24,17 +24,19 @@ class AppInfo {
 			case "docker":
 				return new DockerAppInfo(key: key, appName: content['appName'], image: content['image'], type: EAppType.Docker, version: content['version']);
 		}
+
+		throw Error();
 	}
 
 
 	static Future<List<AppInfo>> fetch(ServerConfig server) async  {
-		return httpGet<List<AppInfo>>(
+		return httpGetServer<List<AppInfo>>(
 			server,
 			'docker/list',
 			transform: (entries) => (entries as Map<String, dynamic>).entries.map((entry) => AppInfo.fromJson(entry.key, entry.value)).toList());
 	}
 
 	Future<void> stop(ServerConfig server) async {
-		return httpGet<void>(server, 'docker/stop/${this.key}');
+		return httpGetServer<void>(server, 'docker/stop/${this.key}');
 	}
 }

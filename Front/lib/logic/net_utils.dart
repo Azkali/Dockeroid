@@ -9,16 +9,20 @@ class DockeroidClientException extends ClientException {
 	DockeroidClientException(String message, Uri targeturi, this.body): super(message, targeturi);
 }
 
-Future<T> httpGet<T>(ServerConfig server, String url, {T Function(dynamic) transform}) async {
+Future<T> httpGetServer<T>(ServerConfig server, String url, {T Function(dynamic) transform}) async {
 	final targetUri = server.uri.resolve(url);
-	final response = await get(targetUri);
+	return httpGet<T>(targetUri, transform: transform);
+}
+
+Future<T> httpGet<T>(Uri url, {T Function(dynamic) transform}) async {
+	final response = await get(url);
 	if(response.statusCode < 200 || response.statusCode >= 400){
-		throw new DockeroidClientException('The server responded with a non-success code ${response.statusCode}', targetUri, response.body);
+		throw new DockeroidClientException('The server responded with a non-success code ${response.statusCode}', url, response.body);
 	}
-	final entries = response.body.isEmpty ? null : json.decode(response.body);
+	final parsedResponse = response.body.isEmpty ? null : json.decode(response.body);
 	if(transform != null){
-		return transform(entries);
+		return transform(parsedResponse);
 	} else {
-		return entries;
+		return parsedResponse;
 	}
 }

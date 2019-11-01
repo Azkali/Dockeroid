@@ -2,10 +2,38 @@
 	{
 		"appName": "vscode",
 		"type": "docker",
-		"version": [
+		"icon": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg",
+		"repository": "https://github.com/cdr/code-server",
+		"versions": [
 			{
 				"image": "codercom/code-server:v2",
 				"version": "0.0.1",
+				"description": "The famous IDE, Visual Studio Code, forked and open-sourced.",
+				"releaseDate": "2019-10-28T15:53:10.475Z",
+				"changelog": "Initial version",
+				"options": {
+					"OpenStdin": true,
+					"Tty": true,
+					"AttachStderr": true,
+					"AttachStdout": true,
+					"AttachStdin": true,
+					"ExposedPorts": {
+						"8080/tcp": {}
+					},
+					"PortBindings": {
+						"8080/tcp": [
+							{
+								"HostPort": "8080"
+							}
+						]
+					}
+				}
+			},
+			{
+				"image": "codercom/code-server:v2",
+				"version": "0.0.2",
+				"description": "The famous IDE, Visual Studio Code, forked, open-sourced and patched.",
+				"releaseDate": "2019-10-28T15:53:10.475Z",
 				"options": {
 					"OpenStdin": true,
 					"Tty": true,
@@ -29,7 +57,7 @@
 	{
 		"appName": "ubuntu",
 		"type": "docker",
-		"version": [
+		"versions": [
 			{
 				"image": "ubuntu:latest",
 				"version": "0.0.1",
@@ -46,7 +74,7 @@
 	{
 		"appName": "alpine",
 		"type": "docker",
-		"version": [
+		"versions": [
 			{
 				"image": "alpine:latest",
 				"version": "0.0.1",
@@ -63,7 +91,7 @@
 	{
 		"appName": "steam-os",
 		"type": "docker",
-		"version": [
+		"versions": [
 			{
 				"image": "azkali/steam-os",
 				"version": "0.0.1",
@@ -140,7 +168,7 @@
 	{
 		"appName": "ubuntu",
 		"type": "qemu",
-		"version": [ 
+		"versions": [ 
 			{
 				"version": "0.0.1",
 				"options": {
