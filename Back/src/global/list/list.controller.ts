@@ -1,7 +1,9 @@
-import { Controller, Get } from '@nestjs/common';
-import { AAppService } from 'src/services/a-app-service';
-import { AppStoreService } from '../app-store/app-store.service';
+import { Controller, Get, Param } from '@nestjs/common';
 import { first } from 'rxjs/operators';
+import { AAppService } from 'src/services/a-app-service';
+import { version } from 'winston';
+import { AppStoreService } from '../app-store/app-store.service';
+import { IApp, IAppVersion } from 'src/mocks/app-store';
 
 @Controller( 'app' )
 export class ListController {
@@ -10,6 +12,6 @@ export class ListController {
 
 	@Get( 'list' )
 	public listApps() {
-		return this.appService.repoIndex.pipe(first());
+		return this.appService.repoIndex.pipe( first() );
 	}
 }
