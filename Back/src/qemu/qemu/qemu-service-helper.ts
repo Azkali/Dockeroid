@@ -21,6 +21,10 @@ export class QemuServiceHelper implements IAppHelper<QemuService, IAppConfig, IV
 		return this.qemu.status( this.id );
 	}
 
+	public async list() {
+		return this.qemu.listAll();
+	}
+
 	public static optionsToName( { label, helperId, version }: IQemuServiceOptions ): string {
 		return `${label}__${version}__${helperId}`;
 	}

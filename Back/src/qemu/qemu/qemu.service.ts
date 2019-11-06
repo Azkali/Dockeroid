@@ -1,15 +1,20 @@
 import { Catch, Injectable } from '@nestjs/common';
 import { spawn } from 'child_process';
+import { Dictionary } from 'lodash';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { AppStoreService, IAppWithParams } from '../../global/app-store/app-store.service';
 import { AAppService } from '../../services/a-app-service';
 import { IAppConfig, IAppServiceInterface } from '../../services/app-interface';
-import { IVirtualMachineStats, Qemu, IVirtualMachineCreateOptions } from './qemu';
+import { IVirtualMachineCreateOptions, IVirtualMachineStats, Qemu } from './qemu';
 import { QemuServiceHelper } from './qemu-service-helper';
 
 @Injectable()
 export class QemuService extends AAppService implements IAppServiceInterface<QemuServiceHelper, IAppConfig, IVirtualMachineStats> {
 	// TODO: Implement Qemu class with status, start, stop, create funcs
-	private readonly qemu = new Qemu();
+	private readonly qemu = new Qemu( this );
+	private readonly virtSubject = new BehaviorSubject<Map<string, QemuServiceHelper>>( new Map<string, QemuServiceHelper>() );
+	// TODO: Maybe cast QemuServiceHelper to hide properties, like the underlying vm itself
+	public readonly virt: Observable<ReadonlyMap<string, QemuServiceHelper>> = this.virtSubject.asObservable();
 	public constructor( private readonly appStoreService: AppStoreService ) {
 		super( 'qemu' );
 	}
@@ -30,8 +35,9 @@ export class QemuService extends AAppService implements IAppServiceInterface<Qem
 		const helperId = this.genId();
 		const appConfig = await this.appStoreService.getApp( appName, version ).toPromise();
 		const vmCreateOptions = this.castAppParamsToContainerConfig( appConfig, helperId );
-		console.log(vmCreateOptions);
-		spawn( appName, [vmCreateOptions] );
+		console.log( vmCreateOptions );
+		spawn( appName, vmCreateOptions.args );
+		return new QemuServiceHelper( this, helperId , { appName }, this.qemu );
 	}
 
 	public async stop( id: string ) {
@@ -39,17 +45,12 @@ export class QemuService extends AAppService implements IAppServiceInterface<Qem
 	}
 
 	public async status( id: string ): Promise<IVirtualMachineStats> {
-		throw new Error( 'Not implemented yet' );
+		// throw new Error( 'Not implemented yet' );
+		return this.qemu.status( id );
 	}
 
-	public async createImage( imgName: string, imgSize: string, format?: string ) {
-		return spawn( 'qemu-img', [
-									'create',
-									'-f',
-									format || 'qcow2',
-									imgName,
-									imgSize,
-								] );
+	public async list(): Promise<QemuServiceHelper[]> {
+		return this.qemu.listAll();
 	}
 
 	public get( id: string ): QemuServiceHelper | undefined {
