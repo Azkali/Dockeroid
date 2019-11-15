@@ -4,10 +4,12 @@ import { Container, ContainerCreateOptions, ContainerStats } from 'dockerode';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Stream } from 'stream';
 
-import { DockerServiceHelper } from './docker-service-helper';
-import { IAppServiceInterface, IAppConfig } from '../../services/app-interface';
-import { AAppService } from '../../services/a-app-service';
+import { Dictionary } from 'lodash';
+import { first, map } from 'rxjs/operators';
 import { AppStoreService, IAppWithParams } from '../../global/app-store/app-store.service';
+import { AAppService } from '../../services/a-app-service';
+import { IAppConfig, IAppServiceInterface } from '../../services/app-interface';
+import { DockerServiceHelper } from './docker-service-helper';
 
 const MANAGER = 'Dockeroid';
 type OnProgress = ( event: any ) => void;
@@ -21,7 +23,7 @@ export class DockerService extends AAppService implements IAppServiceInterface<D
 
 	public constructor( private readonly appStoreService: AppStoreService ) {
 		super( 'docker' );
-		this.listContainers()
+		this.list()
 			.then( async containers => {
 				await Promise.all( containers.map( async container => {
 					const { helperId, label, version } = DockerServiceHelper.nameToOptions( container.Names[0] );
@@ -75,9 +77,11 @@ export class DockerService extends AAppService implements IAppServiceInterface<D
 		return helper;
 	}
 
-	private async listContainers(): Promise<Docker.ContainerInfo[]> {
-		const containers = await this.docker.listContainers();
-		return containers.filter( container => container.Labels.Manager === MANAGER );
+	public async list(): Promise<Dictionary<DockerServiceHelper>> {
+		return this.containers.pipe(
+				first(),
+				map( helpersMap => Object.fromEntries( helpersMap.entries() ) ),
+			).toPromise();
 	}
 
 	public async status( id: string ): Promise<ContainerStats> {
