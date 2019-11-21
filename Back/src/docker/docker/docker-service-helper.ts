@@ -3,10 +3,12 @@ import { IAppConfig, IAppHelper } from '../../services/app-interface';
 import { DockerService } from './docker.service';
 
 export interface IDockerServiceOptions {
-	label: string;
+	app: string;
 	version: string;
 	helperId: string;
 }
+export type Label = string;
+
 export class DockerServiceHelper implements IAppHelper<DockerService, IAppConfig, ContainerStats> {
 
 	public constructor(
@@ -22,15 +24,15 @@ export class DockerServiceHelper implements IAppHelper<DockerService, IAppConfig
 		return this.container.stats();
 	}
 
-	public static optionsToName( { label, helperId, version }: IDockerServiceOptions ): string {
-		return `${label}__${version}__${helperId}`;
+	public static appInstanceToLabel( { app, helperId, version }: IDockerServiceOptions ): Label {
+		return `${app}__${version}__${helperId}`;
 	}
-	public static nameToOptions( name: string ): IDockerServiceOptions {
-		const match = name.match( /^\/?(.+?)__(.+?)__(.+?)$/ );
+	public static labelToAppInstance( label: Label ): IDockerServiceOptions {
+		const match = label.match( /^\/?(.+?)__(.+?)__(.+?)$/ );
 		if ( !match ) {
 			throw new Error( 'Invalid parsed name' );
 		}
-		const [, label, version, helperId] = match;
-		return { label, version, helperId };
+		const [, app, version, helperId] = match;
+		return { app, version, helperId };
 	}
 }

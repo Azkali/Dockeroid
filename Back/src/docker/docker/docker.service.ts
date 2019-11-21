@@ -9,7 +9,7 @@ import { first, map } from 'rxjs/operators';
 import { AppStoreService, IAppWithParams } from '../../global/app-store/app-store.service';
 import { AAppService } from '../../services/a-app-service';
 import { IAppConfig, IAppServiceInterface } from '../../services/app-interface';
-import { DockerServiceHelper } from './docker-service-helper';
+import { DockerServiceHelper, Label } from './docker-service-helper';
 
 const MANAGER = 'Dockeroid';
 type OnProgress = ( event: any ) => void;
@@ -17,22 +17,22 @@ type OnProgress = ( event: any ) => void;
 @Injectable()
 export class DockerService extends AAppService implements IAppServiceInterface<DockerServiceHelper, IAppConfig, ContainerStats> {
 	private readonly docker = new Docker();
-	private readonly containersSubject = new BehaviorSubject<Map<string, DockerServiceHelper>>( new Map<string, DockerServiceHelper>() );
+	private readonly containersSubject = new BehaviorSubject<Map<Label, DockerServiceHelper>>( new Map<Label, DockerServiceHelper>() );
 	// TODO: Maybe cast DockerServiceHelper to hide properties, like the underlying container itself
-	public readonly containers: Observable<ReadonlyMap<string, DockerServiceHelper>> = this.containersSubject.asObservable();
+	public readonly containers: Observable<ReadonlyMap<Label, DockerServiceHelper>> = this.containersSubject.asObservable();
 
 	public constructor( private readonly appStoreService: AppStoreService ) {
 		super( 'docker' );
 		this.list()
 			.then( async containers => {
-				await Promise.all( containers.map( async container => {
-					const { helperId, label, version } = DockerServiceHelper.nameToOptions( container.Names[0] );
-					const config = await this.appStoreService.getApp( label, version ).toPromise();
+				await Promise.all( Object.entries( containers ).map( async ( [containerLabel, container] ) => {
+					const { helperId, app, version } = DockerServiceHelper.labelToAppInstance( containerLabel );
+					const config = await this.appStoreService.getApp( app, version ).toPromise();
 					const helper = new DockerServiceHelper(
 						this,
 						helperId,
 						config,
-						this.docker.getContainer( container.Id ),
+						this.docker.getContainer( container.id ),
 					);
 					this.containersSubject.value.set( helperId, helper );
 				} ) );
@@ -49,9 +49,9 @@ export class DockerService extends AAppService implements IAppServiceInterface<D
 				...config.options.Labels,
 				Manager: MANAGER,
 			},
-			name: DockerServiceHelper.optionsToName( {
+			name: DockerServiceHelper.appInstanceToLabel( {
 				helperId,
-				label: config.appName,
+				app: config.appName,
 				version: config.version,
 			} ),
 		};
@@ -72,12 +72,12 @@ export class DockerService extends AAppService implements IAppServiceInterface<D
 				( err, out ) => err ? rej( err ) : res( out ) ) );
 		const helper = new DockerServiceHelper( this, helperId, appConfig, container );
 		const newMap = new Map( this.containersSubject.value );
-		newMap.set( helperId, helper );
+		newMap.set( DockerServiceHelper.appInstanceToLabel( { app: appName, version: appConfig.version, helperId } ), helper );
 		this.containersSubject.next( newMap );
 		return helper;
 	}
 
-	public async list(): Promise<Dictionary<DockerServiceHelper>> {
+	public async list(): Promise<{[key: string]: DockerServiceHelper}> {
 		return this.containers.pipe(
 				first(),
 				map( helpersMap => Object.fromEntries( helpersMap.entries() ) ),
