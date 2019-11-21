@@ -10,12 +10,14 @@ export class VolumeService {
 	public constructor( private readonly docker: DockerService ) {}
 
 	public createVolume( volName: string, path: string ) {
+		const [protocol, host, port] = path.match( /^(https?:\/\/)([^\s$.?#:].[^:]*):([^:]+)/gm );
 		const newVolume = new Docker.Volume( {
 			host: '127.0.0.1',
 			port: 3000,
 			protocol: 'http'},
-			                                    volName );
-		}
+												volName );
+		return newVolume;
+	}
 
 	private mountVolume( mountMap: Dictionary<string>, config: IAppVersion<any>['volumes'] ) {
 		const mountSettings = Object.entries( mountMap ).reduce( ( acc, [key, val] ) => {
@@ -36,9 +38,11 @@ export class VolumeService {
 		return mountSettings;
 	}
 
-	public detachVolume( volName: string ) { }
+	public detachVolume( volName: string ) { 
+		
+	}
 
-	public removeVolume( volName: string ) {
-
+	public removeVolume( volume: Docker.Volume ) {
+		return volume.remove();
 	}
 }
