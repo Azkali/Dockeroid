@@ -1,4 +1,6 @@
 import { Dictionary } from "lodash";
+import { Docker } from "__mocks__/docker-cli-js";
+import { IVolumesConfig } from "src/mocks/app-store";
 
 export interface IAppConfig {
 	appName: string;
@@ -26,4 +28,8 @@ export interface IAppHelper<
 
 	stop(): Promise<void>;
 	status(): Promise<TStatus>;
+}
+
+export interface IVolumeService {
+	public transformAppConfig(config: IVolumesConfig):  ;
 }
