@@ -44,7 +44,6 @@ export class AppController {
 		@Param( 'appId' ) appId: string,
 	) {
 		const containerStatus = await this.dockerService.stop( appId );
-		console.log( 'Stopped container with id ' + appId );
 		return containerStatus;
 	}
 

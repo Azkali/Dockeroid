@@ -1,4 +1,5 @@
-import { Dictionary } from 'lodash';
+import { IVolumesConfig } from "src/mocks/app-store";
+import { Dictionary } from "lodash";
 
 export interface IAppConfig {
 	appName: string;
@@ -26,4 +27,8 @@ export interface IAppHelper<
 
 	stop(): Promise<void>;
 	status(): Promise<TStatus>;
+}
+
+export interface IVolumeService {
+	public transformAppConfig(config: IVolumesConfig):  ;
 }
