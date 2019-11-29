@@ -40,20 +40,19 @@ export class QemuService extends AAppService implements IAppServiceInterface<Qem
 		return new QemuServiceHelper( this, helperId , { appName }, this.qemu );
 	}
 
-	public async stop( id: string ) {
-		throw new Error( 'Not implemented yet' );
+	public async stop( id: string ): Promise<void> {
+		return this.qemu.stop( id );
 	}
 
 	public async status( id: string ): Promise<IVirtualMachineStats> {
-		// throw new Error( 'Not implemented yet' );
 		return this.qemu.status( id );
 	}
 
-	public async list(): Promise<QemuServiceHelper[]> {
+	public async list(): Promise<Dictionary<QemuServiceHelper>> {
 		return this.qemu.listAll();
 	}
 
 	public get( id: string ): QemuServiceHelper | undefined {
-		throw new Error( 'Not implemented yet' );
+		return this.qemu.get( id );
 	}
 }

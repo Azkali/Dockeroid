@@ -1,6 +1,6 @@
 import { IAppConfig, IAppHelper } from '../../services/app-interface';
+import { IVirtualMachineStats, Qemu } from './qemu';
 import { QemuService } from './qemu.service';
-import { Qemu, IVirtualMachineStats } from './qemu';
 
 export interface IQemuServiceOptions {
 	label: string;
@@ -15,7 +15,7 @@ export class QemuServiceHelper implements IAppHelper<QemuService, IAppConfig, IV
 		public readonly qemu: Qemu ) {}
 
 	public async stop() {
-		return this.qemu.shutdown( this.id );
+		return this.qemu.stop( this.id );
 	}
 	public async status() {
 		return this.qemu.status( this.id );

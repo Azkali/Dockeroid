@@ -1,3 +1,5 @@
+import { Dictionary } from "lodash";
+
 export interface IAppConfig {
 	appName: string;
 	version?: string;
@@ -11,6 +13,7 @@ export interface IAppServiceInterface<
 	stop( id: string ): Promise<void>;
 	status( id: string ): Promise<TStatus>;
 	get( id: string ): THelper | undefined;
+	list(): Promise<Dictionary<THelper>>;
 }
 
 export interface IAppHelper<

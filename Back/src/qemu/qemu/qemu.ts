@@ -38,9 +38,14 @@ export class Qemu {
 		return spawn( 'virsh', ['start', vmName ] );
 	}
 
-	public stop( vmName: string ) {
+	public stop( vmName: string ): Promise<void> {
 		this.isNouOrEmpty( vmName );
-		return spawn( 'virsh', ['shutdown', vmName] );
+		const stopHelper = spawn( 'virsh', ['shutdown', vmName] )
+		.stdout.on( 'data', data => {
+			console.log( data );
+			return data;
+		} ) ;
+		return stopHelper.read();
 	}
 
 	public destroy( vmName: string ) {
@@ -52,6 +57,11 @@ export class Qemu {
 		return spawn( 'virsh', ['list', vmName || ''] );
 	}
 
+	public async get( vmName: string ) {
+		this.isNouOrEmpty( vmName );
+		return spawn( 'virsh', [ 'get', vmName ] );
+	}
+
 	public create( options: IVirtualMachineCreateOptions ) {
 		return spawn( 'virt-install', ['-n', options.name], options.args ).stdout.on( 'data', data => {
 			console.log( data );
@@ -60,7 +70,7 @@ export class Qemu {
 		);
 	}
 
-	public async listAll(): Promise < QemuServiceHelper[] > {
+	public async listAll(): Promise<Dictionary<QemuServiceHelper>> {
 		const output = await new Promise<string>( ( res, rej ) => {
 			let out = '';
 			const childProc = spawn( 'virsh', ['list', '--all'] );
@@ -79,7 +89,7 @@ export class Qemu {
 			this.isNouOrEmpty( [name, state] );
 			return new QemuServiceHelper( this.qemuService, id, { appName: name } , this );
 		} ) );
-		return vmProperties;
+		return vmProperties.;
 	}
 
 	public delete( vmName: string ) {
