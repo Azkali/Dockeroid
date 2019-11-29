@@ -12,7 +12,7 @@ export class VolumeService {
 		// Full Match making three groups
 		// path.match( /^(https?):\/\/|([^\s$.?#:].[^:]*)|:([^:]+)/gm )];
 		const [protocol, host, port] = [
-			path.match( /^(https?):\/\//gm ),
+			path.match( /^(https?):\/\//gm ) || 'http',
 			// TODO: Should modify second regex to match localhost/localIP only
 			path.match( /.*\/([^\s$.?#:].[^:]*)/gm ),
 			path.match( /.*:([^:]\d+)/gm ),
@@ -45,11 +45,16 @@ export class VolumeService {
 	}
 
 	public volumeInfos( volume: Docker.Volume ) {
-		
 		return volume.inspect();
 	}
 
 	public removeVolume( volume: Docker.Volume ) {
 		return volume.remove();
 	}
+
+	public listVolumes( config: IAppVersion<any>['volumes'] ) {
+		return config;
+	}
+
+	public detachVolume( ) { }
 }
