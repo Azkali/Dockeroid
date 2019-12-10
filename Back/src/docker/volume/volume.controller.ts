@@ -1,15 +1,21 @@
-import { Controller, Get, Inject, Param } from '@nestjs/common';
+import { Controller, Get, Inject, Param, Module } from '@nestjs/common';
 import { Logger } from 'winston';
 import { VolumeService } from '../docker/volume/volume.service';
+
+@Module( {
+	imports: [ VolumeService ],
+} )
 
 @Controller( 'volume' )
 export class VolumeController {
 
-	public constructor( @Inject( 'winston' ) private readonly logger: Logger, private readonly volumeService: VolumeService ) { }
+	public constructor(
+		@Inject( 'winston' ) private readonly logger: Logger,
+		private readonly volumeService: VolumeService ) { }
 
 	@Get( 'mount' )
 	public mount() {
-		return this.volumeService.mountVolume();
+		// return this.volumeService.mountVolume();
 	}
 
 	@Get( 'create/:name/:path' )
@@ -24,13 +30,13 @@ export class VolumeController {
 	public remove(
 		@Param( 'name' ) name: string,
 	) {
-		return this.volumeService.removeVolume();
+		return this.volumeService.removeVolume( name );
 	}
 
 	@Get( 'info/:name' )
 	public info(
 		@Param( 'name' ) name: string,
 	) {
-		return this.volumeService.volumeInfos();
+		return this.volumeService.volumeInfos( name );
 	}
 }

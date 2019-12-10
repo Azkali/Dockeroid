@@ -6,7 +6,8 @@ import { DockerService } from '../docker.service';
 
 @Injectable()
 export class VolumeService {
-	public constructor( private readonly docker: DockerService ) { }
+	public constructor(
+		private readonly volume: Docker.Volume ) { }
 
 	public createVolume( volName: string, path: string ) {
 		// Full Match making three groups
@@ -21,7 +22,7 @@ export class VolumeService {
 			host,
 			port,
 			protocol,
-		},                                  volName );
+		},                                   volName );
 		return newVolume;
 	}
 
@@ -40,16 +41,16 @@ export class VolumeService {
 			};
 			acc.push( volumeSetting );
 			return acc;
-		},                                                    [] as Docker.MountSettings[] );
+		},                                                       [] as Docker.MountSettings[] );
 		return mountSettings;
 	}
 
-	public volumeInfos( volume: Docker.Volume ) {
-		return volume.inspect();
+	public volumeInfos( volume: string ) {
+		return this.volume.inspect( vol => vol );
 	}
 
-	public removeVolume( volume: Docker.Volume ) {
-		return volume.remove();
+	public removeVolume( volume: string ) {
+		return this.volume.remove( volume );
 	}
 
 	public listVolumes( config: IAppVersion<any>['volumes'] ) {

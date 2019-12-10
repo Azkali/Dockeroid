@@ -31,5 +31,5 @@ export interface IAppHelper<
 }
 
 export interface IVolumeService {
-	public transformAppConfig(config: IVolumesConfig):  ;
+	// public transformAppConfig(config: IVolumesConfig):  ;
 }
