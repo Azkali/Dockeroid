@@ -1,0 +1,46 @@
+{
+  "name": "Dockeroid",
+  "version": "1.0.0",
+  "description": "## What is Dockeroid ?",
+  "main": "index.js",
+  "scripts": {
+    "lint:commit-message:current": "commitlint -g ./package.json -e",
+    "test:all": "cd Back && npm run test && cd ../Front && npm run test -- --watch=false",
+    "lint:all": "cd Back && npm run lint && cd ../Front && npm run lint",
+    "build:all": "cd Back && npm run build && cd ../Front && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Azkali/Dockeroid.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Azkali/Dockeroid/issues"
+  },
+  "homepage": "https://github.com/Azkali/Dockeroid#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^8.2.0",
+    "@commitlint/config-conventional": "^8.2.0",
+    "git-cz": "^3.3.0",
+    "husky": "^3.1.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/git-cz"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "parserPreset": "git-cz"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "npm run lint:commit-message:current",
+      "pre-commit": "npm run lint:all && npm run test:all && npm run build:all"
+    }
+  }
+}
