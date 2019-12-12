@@ -1,18 +1,15 @@
 import { Controller, Get, Inject, NotFoundException, Param } from '@nestjs/common';
-import {fromPairs} from 'lodash';
+import { fromPairs } from 'lodash';
 import { Logger } from 'winston';
 
 import { first, map } from 'rxjs/operators';
-import { DockerService } from '../docker/docker.service';
+import { DockerService } from './docker-service/docker.service';
 
-@Controller( 'docker' )
-export class AppController {
-	public constructor( @Inject( 'winston' ) private readonly logger: Logger, private readonly dockerService: DockerService ) { }
-
-	@Get()
-	public getHello(): string {
-		return 'Wello Horld';
-	}
+@Controller( )
+export class DockerController {
+	public constructor(
+		@Inject( 'winston' ) private readonly logger: Logger,
+		private readonly dockerService: DockerService ) { }
 
 	@Get( 'start/:containerName' )
 	public async startContainer(
@@ -65,5 +62,13 @@ export class AppController {
 			map( containerHelperMap => fromPairs( [...containerHelperMap.entries()]
 				.map( ( [, helper] ) => [helper.id, helper.appConfig] ) ) ),
 		);
+	}
+	// WIP
+	@Get( 'listVolumes/:appId' )
+	public async listVolumes(
+		@Param( 'appId' ) appId: string,
+	) {
+		const volumesList = await this.dockerService.listVolumes( appId );
+		return volumesList;
 	}
 }

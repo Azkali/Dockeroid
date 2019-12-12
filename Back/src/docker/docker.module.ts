@@ -1,15 +1,12 @@
 import { Module } from '@nestjs/common';
 import { WinstonModule } from 'nest-winston';
 
-import { Volume } from 'dockerode';
-import { AppController } from './app/app.controller';
-import { DockerService } from './docker/docker.service';
-import { VolumeService } from './docker/volume/volume.service';
-import { VolumeController } from './volume/volume.controller';
+import { DockerService } from './docker-service/docker.service';
+import { DockerController } from './docker.controller';
 
 @Module( {
-  controllers: [AppController, VolumeController],
+  controllers: [DockerController],
   imports: [WinstonModule],
-  providers: [DockerService, VolumeService, Volume],
+  providers: [DockerService],
 } )
 export class DockerModule {}

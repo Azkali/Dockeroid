@@ -1,10 +1,8 @@
-import { MountConfig } from 'dockerode';
-
 export interface IAppVersion<TOptions extends {}> {
 	version: string;
 	image: string;
 	options: TOptions;
-	volumes: IVolumesConfig;
+	mounts: IMountsConfig;
 }
 
 export interface IApp<TOptions extends {}> {
@@ -15,10 +13,10 @@ export interface IApp<TOptions extends {}> {
 	repository: string;
 }
 
-export interface IVolumesConfig {
-	customVolumes: boolean;
-	internalVolumes: string[];
-	userVolumes: Array<{
+export interface IMountsConfig {
+	customMounts: boolean;
+	internalMounts: string[];
+	userMounts: Array<{
 		label: string;
 		desc: string;
 		target: string;

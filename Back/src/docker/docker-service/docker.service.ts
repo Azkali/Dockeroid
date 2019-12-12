@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
+
 import * as Docker from 'dockerode';
 import { Container, ContainerCreateOptions, ContainerStats } from 'dockerode';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Stream } from 'stream';
 
-import { Dictionary } from 'lodash';
 import { first, map } from 'rxjs/operators';
 import { AppStoreService, IAppWithParams } from '../../global/app-store/app-store.service';
 import { AAppService } from '../../services/a-app-service';
@@ -130,5 +130,19 @@ export class DockerService extends AAppService implements IAppServiceInterface<D
 	private async imageExists( image: string ): Promise<boolean> {
 		const images = await this.docker.listImages( { filters: { reference: [image] }} );
 		return images.length > 0;
+	}
+
+	// WIP
+	public async listVolumes( id: string ) {
+		const containerHelper = this.get( id );
+		if ( !containerHelper ) {
+			throw new Error( `Unknow container with id ${id}` );
+		}
+		console.log( await this.docker.listVolumes());
+		return containerHelper.container.inspect()
+		.then( volumes => {
+			console.log( volumes.Mounts );
+			return volumes.Config.Volumes;
+		} );
 	}
 }
