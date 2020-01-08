@@ -10,7 +10,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "lib": ["esnext"]
+    "lib": ["esnext"],
   },
   "exclude": ["node_modules"]
 }

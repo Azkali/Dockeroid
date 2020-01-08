@@ -1,3 +1,3 @@
-export class Docker{
-	command = jest.fn();
+export class Docker {
+	public command = jest.fn();
 }

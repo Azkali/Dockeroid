@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { VolumeController } from './volume.controller';
+import { VirshController } from './virsh.controller';
 
-describe( 'Volume Controller', () => {
-  let controller: VolumeController;
+describe( 'Virsh Controller', () => {
+  let controller: VirshController;
 
   beforeEach( async () => {
 	const module: TestingModule = await Test.createTestingModule( {
-		controllers: [VolumeController],
+		controllers: [VirshController],
 	} ).compile();
 
-	controller = module.get<VolumeController>( VolumeController );
+	controller = module.get<VirshController>( VirshController );
   } );
 
   it( 'should be defined', () => {

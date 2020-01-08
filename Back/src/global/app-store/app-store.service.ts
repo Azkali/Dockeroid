@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 import { writeFileSync } from 'fs';
 import { chain, compact, Dictionary, isEmpty, isEqual } from 'lodash';
@@ -72,28 +72,51 @@ export class AppStoreService {
 	// 		writeFileSync( this.repoFile, JSON.stringify( reposDescs, null, 4 ) );
 	// 	} );
 
-	public constructor( private readonly configService: ConfigService ) {
-		this.repoIndexSubject.subscribe( index => console.log( index ) );
-		this.repoIndexSubject.next(require('../../mocks/app-store.json'));
+	public constructor(
+		private readonly configService: ConfigService ) {
+		this.repoIndexSubject.subscribe( index => index );
+		this.repoIndexSubject.next( require( '../../mocks/app-store.json' ) );
 	}
 
+	/**
+	 * Triggers a refresh of the repository content
+	 */
 	public update() {
 		throw new WsException( 'not implemented yet !' );
 	}
 
+	/**
+	 * Add a new repository
+	 * @param label - Label of the repository
+	 * @param url - URL of the repository
+	 */
 	public addRepo( label: string, url: string ) {
 		return this.repoIndexSubject.subscribe( index => index.values );
 	}
 
+	/**
+	 * Replace a repository by a newer version of it
+	 * @param label - Label of the repository
+	 * @param url - New URL of the repository
+	 */
 	public replaceRepo( label: string, url: string ) {
 		this.removeRepo( label );
 		this.addRepo( label, url );
 	}
 
+	/**
+	 * Remove a repository
+	 * @param label - Label of the repository
+	 */
 	public removeRepo( label: string ) {
 		return this.repoIndexSubject.unsubscribe();
 	}
 
+	/**
+	 * Generic method to retrieve an application
+	 * @param name - Name of the app to get
+	 * @param version - Version of the app
+	 */
 	public getApp( name: string, version?: string ) {
 		return this.repoIndexSubject
 			.pipe(

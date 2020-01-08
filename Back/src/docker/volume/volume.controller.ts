@@ -1,4 +1,4 @@
 import { Controller } from '@nestjs/common';
 
-@Controller('volume')
+@Controller( 'volume' )
 export class VolumeController {}

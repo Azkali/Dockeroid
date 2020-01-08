@@ -9,6 +9,9 @@ import { NestFactory } from '@nestjs/core';
 import { Logger } from 'winston';
 import { AppModule } from './app.module';
 
+/**
+ * Application entry point
+ */
 async function bootstrap() {
 	const app = await NestFactory.create( AppModule );
 	app.useLogger( app.get( 'NestWinston' ) );
@@ -17,4 +20,6 @@ async function bootstrap() {
 	( app.get( 'NestWinston' ).logger as Logger ).info( `Starting app on port ${port}` );
 	await app.listen( port );
 }
-bootstrap();
+bootstrap()
+.then( out => out )
+.catch( err => err );

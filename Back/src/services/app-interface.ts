@@ -1,5 +1,4 @@
-import { IVolumesConfig } from "src/mocks/app-store";
-import { Dictionary } from "lodash";
+import { Dictionary } from 'lodash';
 
 export interface IAppConfig {
 	appName: string;
@@ -10,10 +9,25 @@ export interface IAppServiceInterface<
 	THelper extends IAppHelper<IAppServiceInterface<THelper, TConfig, TStatus>, TConfig, TStatus>,
 	TConfig extends IAppConfig,
 	TStatus> {
+	/**
+	 * Generic method to start an application
+	 */
 	start( appName: string, version?: string ): Promise<THelper>;
+	/**
+	 * Generic method to stop an application
+	 */
 	stop( id: string ): Promise<void>;
+	/**
+	 * Generic method to stop an application
+	 */
 	status( id: string ): Promise<TStatus>;
+	/**
+	 * Generic method to get infos about an application
+	 */
 	get( id: string ): THelper | undefined;
+	/**
+	 * Generic method that lists all applications
+	 */
 	list(): Promise<Dictionary<THelper>>;
 }
 
@@ -25,10 +39,16 @@ export interface IAppHelper<
 	readonly id: string;
 	readonly appConfig: TConfig;
 
+	/**
+	 * Generic method of the helper to stop an application
+	 */
 	stop(): Promise<void>;
+	/**
+	 * Generic method of the helper to get the status of an application
+	 */
 	status(): Promise<TStatus>;
 }
 
-export interface IVolumeService {
-	public transformAppConfig(config: IVolumesConfig):  ;
-}
+// export interface IMountService {
+// 	public transformAppConfig( config: IMountsConfig ):  ;
+// }

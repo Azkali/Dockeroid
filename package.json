@@ -1,13 +1,16 @@
 {
   "name": "Dockeroid",
   "version": "1.0.0",
-  "description": "## What is Dockeroid ?",
+  "description": "Home Scaled Cloud Computing",
   "main": "index.js",
   "scripts": {
     "lint:commit-message:current": "commitlint -g ./package.json -e",
     "test:all": "cd Back && npm run test && cd ../Front && npm run test -- --watch=false",
+    "test:back": "cd Back && npm run test",
     "lint:all": "cd Back && npm run lint && cd ../Front && npm run lint",
-    "build:all": "cd Back && npm run build && cd ../Front && npm run build"
+    "lint:back": "cd Back && npm run lint",
+    "build:all": "cd Back && npm run build && cd ../Front && npm run build",
+    "build:back": "cd Back && npm run build"
   },
   "repository": {
     "type": "git",
@@ -40,7 +43,7 @@
   "husky": {
     "hooks": {
       "commit-msg": "npm run lint:commit-message:current",
-      "pre-commit": "npm run lint:all && npm run test:all && npm run build:all"
+      "pre-commit": "npm run lint:back && npm run test:back && npm run build:back"
     }
   }
 }

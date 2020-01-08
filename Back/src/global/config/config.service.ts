@@ -12,7 +12,12 @@ export class ConfigService {
 	this.envConfig = dotenv.parse( fs.readFileSync( filePath ) );
   }
 
+  /**
+   * Get a repository from a location ( DB, Local_Storage )
+   * @param key - The location of the repository
+   * @returns The repository location
+   */
   public get( key: string ): string {
-	return this.envConfig[key];
+	  return this.envConfig[key];
   }
 }

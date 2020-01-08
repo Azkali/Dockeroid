@@ -13,10 +13,10 @@ import { ITodo } from "../models/todo";
     templateUrl: "./home.component.html"
 })
 export class HomeComponent {
-    public mockedDataArray = require("../mocks/data");
-    public tabSelectedIndex: number;
-    public tabSelectedIndexResult: string;
-    public countries: ObservableArray<ITodo>;
+    mockedDataArray = require("../mocks/data");
+    tabSelectedIndex: number;
+    tabSelectedIndexResult: string;
+    countries: ObservableArray<ITodo>;
 
     constructor() {
         this.tabSelectedIndexResult = "Profile Tab (tabSelectedIndex = 0 )";
@@ -47,7 +47,7 @@ export class HomeComponent {
 
     onScrollLoaded(args) {
         // scroll to specific position of the horizontal scroll list
-        let scrollOffset = 330;
+        const scrollOffset = 330;
         (<ScrollView>args.object).scrollToVerticalOffset(scrollOffset, true);
     }
 
