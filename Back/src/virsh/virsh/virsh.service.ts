@@ -145,7 +145,7 @@ export class VirshService extends AAppService implements IAppServiceInterface<Vi
 	 * List all available VM's
 	 * @param vmName - VM name set in the repository file
 	 */
-	public async list(): Promise<Dictionary<VirshServiceHelper>> {
+	public async list(): Promise<{[key: number]: VirshServiceHelper}> {
 		const output = await new Promise<string>( ( res, rej ) => {
 			let out = '';
 			const childProc = spawn( 'virsh', ['list', '--all'] );
@@ -154,7 +154,9 @@ export class VirshService extends AAppService implements IAppServiceInterface<Vi
 				rej( new Error( 'Non 0 exit code' ) ) :
 				res( out ) );
 		} );
+
 		const listOfVm = output.split( /^-{3,}$/gm )[1];
+
 		const vmProperties: VirshServiceHelper[] = listOfVm.split( /\r?\n/ )
 		.filter( Boolean )
 		.map( ( vm => {
@@ -163,8 +165,8 @@ export class VirshService extends AAppService implements IAppServiceInterface<Vi
 			return new VirshServiceHelper( this, id, { appName: name }, this.virsh );
 		} ) );
 
-		const list: Dictionary<VirshServiceHelper> = vmProperties
-		.reduce<Dictionary<VirshServiceHelper>>( ( res, item, idx ) => ( { ...res, [idx]: item } ), {} );
+		const list = new Promise<Dictionary<VirshServiceHelper>>( ( resolve, rej ) => resolve( vmProperties
+		.reduce<Dictionary<VirshServiceHelper>>( ( res, item, idx ) => ( { ...res, [idx]: item } ), {} ) ) );
 		return list;
 	}
 

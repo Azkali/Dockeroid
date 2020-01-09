@@ -107,12 +107,8 @@ export class VirshController {
 	 * @returns A dictionnary of IAppConfig
 	 */
 	@Get( 'list' )
-	public async listContainers(): Promise<{[key: number]: VirshServiceHelper}> {
-		const listHelper: Promise<Dictionary<VirshServiceHelper>> = await this.virshService
-		.list()
-		.then( out => out )
-		.catch( err => err );
-		console.log( listHelper );
+	public async listContainers() {
+		const listHelper = await this.virshService.list();
 		return listHelper;
 	}
 }
