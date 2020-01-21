@@ -1,14 +1,24 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import * as Docker from 'dockerode';
 import { shuffle } from 'lodash';
+import { WinstonModule } from 'nest-winston';
+import { AppStoreService } from '../../global/app-store/app-store.service';
 import { ContainerService } from './container.service';
 
 describe( 'DockerService', () => {
 	let service: ContainerService;
+	const mockService = {};
 
 	beforeEach( async () => {
 		const module: TestingModule = await Test.createTestingModule( {
-			providers: [ContainerService],
+			imports: [ WinstonModule.forRoot( {} ) ],
+			providers: [
+				ContainerService,
+				{
+					provide: AppStoreService,
+					useValue: mockService,
+				},
+			],
 		} ).compile();
 
 		service = module.get<ContainerService>( ContainerService );
