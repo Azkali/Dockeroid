@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WinstonModule } from 'nest-winston';
 import { AppStoreService } from '../../global/app-store/app-store.service';
+import { Virsh } from './virsh';
 import { VirshService } from './virsh.service';
 
 describe( 'VirshService', () => {
@@ -11,6 +12,7 @@ describe( 'VirshService', () => {
 	const module: TestingModule = await Test.createTestingModule( {
 		imports: [ WinstonModule.forRoot( {} ) ],
 		providers: [
+			Virsh,
 			VirshService,
 			{
 				provide: AppStoreService,

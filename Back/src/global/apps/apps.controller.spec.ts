@@ -3,25 +3,26 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WinstonModule } from 'nest-winston';
 import * as request from 'supertest';
 import { ContainerService } from '../../docker/container/container.service';
+import { Virsh } from '../../virsh/virsh/virsh';
 import { VirshService } from '../../virsh/virsh/virsh.service';
 import { AppStoreService } from '../app-store/app-store.service';
-import { ConfigService } from '../config/config.service';
 import { AppsController } from './apps.controller';
 
 describe( 'Apps Controller', () => {
 let app: INestApplication;
+const mockService = {};
 
 beforeEach( async () => {
 	const module: TestingModule = await Test.createTestingModule( {
 		controllers: [AppsController],
-		imports: [WinstonModule],
+		imports: [WinstonModule.forRoot( {} )],
 		providers: [
-			AppStoreService,
 			ContainerService,
+			Virsh,
 			VirshService,
 			{
-				provide: ConfigService,
-				useValue: new ConfigService( '.env' ),
+				provide: AppStoreService,
+				useValue: mockService,
 			},
 		],
 	} )
