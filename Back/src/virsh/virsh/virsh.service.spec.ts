@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WinstonModule } from 'nest-winston';
 import { AppStoreService } from '../../global/app-store/app-store.service';
 import { Virsh } from './virsh';
-import { VirshService } from './virsh.service';
+import { VirshHypervisorService } from './virsh.service';
 
 describe( 'VirshService', () => {
-  let service: VirshService;
+  let service: VirshHypervisorService;
   const mockService = {};
 
   beforeEach( async () => {
@@ -13,7 +13,7 @@ describe( 'VirshService', () => {
 		imports: [ WinstonModule.forRoot( {} ) ],
 		providers: [
 			Virsh,
-			VirshService,
+			VirshHypervisorService,
 			{
 				provide: AppStoreService,
 				useValue: mockService,
@@ -21,7 +21,7 @@ describe( 'VirshService', () => {
 		],
 	} ).compile();
 
-	service = module.get<VirshService>( VirshService );
+	service = module.get<VirshHypervisorService>( VirshHypervisorService );
   } );
 
   it( 'should be defined', () => {

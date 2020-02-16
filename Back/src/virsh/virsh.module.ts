@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
 import { WinstonModule } from 'nest-winston';
-
 import { VirshController } from './controller/virsh.controller';
-import { Virsh } from './virsh/virsh';
-import { VirshService } from './virsh/virsh.service';
+import { VirshHypervisorService } from './virsh/virsh.service';
 
 @Module( {
   controllers: [VirshController],
-  exports: [VirshService, Virsh],
+  exports: [VirshHypervisorService],
   imports: [WinstonModule],
-  providers: [VirshService, Virsh],
+  providers: [VirshHypervisorService],
 } )
 export class VirshModule {}

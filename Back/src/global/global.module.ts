@@ -11,8 +11,7 @@ import { ConfigService } from './config/config.service';
 import { ListController } from './list/list.controller';
 
 @Global()
-@Module( {
-	controllers: [ListController, AppsController],
+@Module({
 	exports: [
 		WinstonModule,
 		AppStoreService,

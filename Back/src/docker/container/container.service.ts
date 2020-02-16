@@ -5,21 +5,20 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { first, map } from 'rxjs/operators';
 import { Stream } from 'stream';
 import { Logger } from 'winston';
-
 import { AppStoreService, IAppWithParams } from '../../global/app-store/app-store.service';
 import { AAppService } from '../../services/a-app-service';
-import { IAppConfig, IAppServiceInterface } from '../../services/app-interface';
-import { ContainerServiceHelper, Label } from './container-service-helper';
+import { IAppConfig, IHypervisorService } from '../../services/i-hypervisor-service';
+import { DockerInstance, Label } from './container-service-helper';
 
 const MANAGER = 'Dockeroid';
 type OnProgress = ( event: any ) => void;
 
 @Injectable()
-export class ContainerService extends AAppService implements IAppServiceInterface<ContainerServiceHelper, IAppConfig, ContainerStats> {
+export class DockerHypervisorService extends AAppService implements IHypervisorService<DockerInstance, IAppConfig, ContainerStats> {
 	private readonly docker = new Docker();
-	private readonly containersSubject = new BehaviorSubject<Map<Label, ContainerServiceHelper>>( new Map<Label, ContainerServiceHelper>() );
+	private readonly containersSubject = new BehaviorSubject<Map<Label, DockerInstance>>( new Map<Label, DockerInstance>() );
 	// TODO: Maybe cast DockerServiceHelper to hide properties, like the underlying container itself
-	public readonly containers: Observable<ReadonlyMap<Label, ContainerServiceHelper>> = this.containersSubject.asObservable();
+	public readonly containers: Observable<ReadonlyMap<Label, DockerInstance>> = this.containersSubject.asObservable();
 
 	public constructor(
 			@Inject( 'winston' ) private readonly logger: Logger,
@@ -29,9 +28,9 @@ export class ContainerService extends AAppService implements IAppServiceInterfac
 		this.list()
 			.then( async containers => {
 				await Promise.all( Object.entries( containers ).map( async ( [containerLabel, container] ) => {
-					const { helperId, app, version } = ContainerServiceHelper.labelToAppInstance( containerLabel );
+					const { helperId, app, version } = DockerInstance.labelToAppInstance( containerLabel );
 					const config = await this.appStoreService.getApp( app, version ).toPromise();
-					const helper = new ContainerServiceHelper(
+					const helper = new DockerInstance(
 						this,
 						helperId,
 						config,
@@ -58,8 +57,8 @@ export class ContainerService extends AAppService implements IAppServiceInterfac
 				...config.options.Labels,
 				Manager: MANAGER,
 			},
-			name: ContainerServiceHelper.appInstanceToLabel( {
-				app: config.appName,
+			name: DockerInstance.appInstanceToLabel( {
+				app: config.name,
 				helperId,
 				version: config.version,
 			} ),
@@ -67,25 +66,29 @@ export class ContainerService extends AAppService implements IAppServiceInterfac
 		return configOption;
 	}
 
+	public start( name: string ) {
+		return this.startWithVersion( name );
+	}
+
 	/**
 	 * Starts a container
-	 * @param appName - Name of the application to start in a container
+	 * @param name - Name of the application to start in a container
 	 * @param version - Version of the app found in json file; default value is latest
 	 * @returns Configuration of the Container
 	 */
-	public async start( appName: string, version?: string ) {
+	public async startWithVersion( name: string, version?: string ) {
 		const helperId = this.genId();
-		const appConfig = await this.appStoreService.getApp( appName, version ).toPromise();
+		const appConfig = await this.appStoreService.getApp( name, version ).toPromise();
 		if ( !this.imageExists( appConfig.image ) ) {
 			await this.pullImage( appConfig.image, {} );
 		}
 		const containerCreateOptions = this.castAppParamsToContainerConfig( appConfig, helperId );
-		this.logger.log( { level: 'info', message: `Starting container ${appConfig.appName} v${appConfig.version} with options ${containerCreateOptions}` } );
+		this.logger.log( { level: 'info', message: `Starting container ${appConfig.name} v${appConfig.version} with options ${containerCreateOptions}` } );
 		const container = await new Promise<Container>(
 			( res, rej ) => this.docker.createContainer(
 				containerCreateOptions,
 				( err, out ) => err ? rej( err ) : res( out ) ) );
-		const helper = new ContainerServiceHelper( this, helperId, appConfig, container );
+		const helper = new DockerInstance( this, helperId, appConfig, container );
 		const newMap = new Map( this.containersSubject.value );
 		newMap.set( helperId, helper );
 		this.containersSubject.next( newMap );
@@ -96,7 +99,7 @@ export class ContainerService extends AAppService implements IAppServiceInterfac
 	 * List all avalaible containers
 	 * @returns List of containers with information
 	 */
-	public async list(): Promise<{[key: string]: ContainerServiceHelper}> {
+	public async list(): Promise<{[key: string]: DockerInstance}> {
 		return this.containers.pipe(
 				first(),
 				map( helpersMap => Object.fromEntries( helpersMap.entries() ) ),
@@ -137,7 +140,7 @@ export class ContainerService extends AAppService implements IAppServiceInterfac
 	 * @param id - Id of a running Container
 	 * @returns Configuration of the Container
 	 */
-	public get( id: string ): ContainerServiceHelper | undefined {
+	public get( id: string ): DockerInstance | undefined {
 		return this.containersSubject.value.get( id );
 	}
 
@@ -196,5 +199,13 @@ export class ContainerService extends AAppService implements IAppServiceInterfac
 			this.logger.log( { message: `Mounted volumes: ${volumes.Mounts}`, level: 'info' } );
 			return volumes.Config.Volumes;
 		} );
+	}
+
+	public infos( name: string ) {
+		return this.infosWithVersion( name );
+	}
+
+	public infosWithVersion( name: string, version?: string ) {
+		return this.appStoreService.getApp( name, version );
 	}
 }

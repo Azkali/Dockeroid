@@ -4,7 +4,7 @@ import { WinstonModule } from 'nest-winston';
 import * as request from 'supertest';
 import { AppStoreService } from '../../global/app-store/app-store.service';
 import { Virsh } from '../virsh/virsh';
-import { VirshService } from '../virsh/virsh.service';
+import { VirshHypervisorService } from '../virsh/virsh.service';
 import { VirshController } from './virsh.controller';
 
 describe( 'Virsh Controller', () => {
@@ -18,7 +18,7 @@ describe( 'Virsh Controller', () => {
 			imports: [WinstonModule.forRoot( {} )],
 			providers: [
 				Virsh,
-				VirshService,
+				VirshHypervisorService,
 				{
 					provide: AppStoreService,
 					useValue: mockService,
@@ -33,14 +33,5 @@ describe( 'Virsh Controller', () => {
 
 	it( 'should be defined', () => {
 		expect( controller ).toBeDefined();
-	} );
-
-	it( '/GET /virsh', () =>
-		request( app.getHttpServer() )
-			.get( '/virsh' )
-			.expect( 200 ) );
-
-	afterAll( async () => {
-		await app.close();
 	} );
 } );

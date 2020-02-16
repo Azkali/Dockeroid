@@ -1,18 +1,25 @@
-import { IAppConfig, IAppHelper } from '../../services/app-interface';
-import { Virsh } from './virsh';
-import { IVirtualMachineStats, VirshService } from './virsh.service';
+import { IAppConfig, IHypervisorInstance } from '../../services/i-hypervisor-service';
+import { VirshHypervisorService } from './virsh.service';
 
 export interface IVirshServiceOptions {
-	label: string;
+	app: string;
 	version: string;
 	helperId: string;
 }
-export class VirshServiceHelper implements IAppHelper<VirshService, IAppConfig, IVirtualMachineStats> {
+
+export interface IVirshDomain {
+	id: string;
+	name: string;
+	state: string;
+}
+
+export type Label = string;
+
+export class VirshServiceHelper implements IHypervisorInstance<VirshHypervisorService, IAppConfig, IVirshDomain> {
 	public constructor(
-		public readonly relatedService: VirshService,
+		public readonly relatedService: VirshHypervisorService,
 		public readonly id: string,
-		public readonly appConfig: IAppConfig,
-		public readonly virsh: Virsh ) {}
+		public readonly appConfig: IAppConfig ) { }
 
 	/**
 	 * Stop a runnning VM
@@ -32,20 +39,20 @@ export class VirshServiceHelper implements IAppHelper<VirshService, IAppConfig, 
 	}
 
 	/**
-	 * Converts a label, helperId and version to a single string representing the appId
+	 * Converts a label, helperId and version to a single string representing the id
 	 *
-	 * @param IDockerServiceOptions - { label, helperId, version }
+	 * @param IVirshServiceOptions - { label, helperId, version }
 	 *
 	 * @returns A single concatenated string
 	 */
-	public static optionsToName( { label, helperId, version }: IVirshServiceOptions ): string {
-		return `${label}__${version}__${helperId}`;
+	public static optionsToName( { app, helperId, version }: IVirshServiceOptions ): string {
+		return `${app}__${version}__${helperId}`;
 	}
 
 	/**
-	 * Extracts a label, helperId and version from an appId
+	 * Extracts a label, helperId and version from an id
 	 *
-	 * @param name - a string containing the appId
+	 * @param name - a string containing the id
 	 *
 	 * @returns An object containing the label, helperId and version of the application
 	 *
@@ -56,7 +63,7 @@ export class VirshServiceHelper implements IAppHelper<VirshService, IAppConfig, 
 		if ( !match ) {
 			throw new Error( 'Invalid parsed name' );
 		}
-		const [, label, version, helperId] = match;
-		return { label, version, helperId };
+		const [, app, version, helperId] = match;
+		return { app, version, helperId };
 	}
 }

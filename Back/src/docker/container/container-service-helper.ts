@@ -1,6 +1,6 @@
 import { Container, ContainerStats } from 'dockerode';
-import { IAppConfig, IAppHelper } from '../../services/app-interface';
-import { ContainerService } from './container.service';
+import { IAppConfig, IHypervisorInstance } from '../../services/i-hypervisor-service';
+import { DockerHypervisorService } from './container.service';
 
 export interface IDockerServiceOptions {
 	app: string;
@@ -10,10 +10,10 @@ export interface IDockerServiceOptions {
 
 export type Label = string;
 
-export class ContainerServiceHelper implements IAppHelper<ContainerService, IAppConfig, ContainerStats> {
+export class DockerInstance implements IHypervisorInstance<DockerHypervisorService, IAppConfig, ContainerStats> {
 
 	public constructor(
-		public readonly relatedService: ContainerService,
+		public readonly relatedService: DockerHypervisorService,
 		public readonly id: string,
 		public readonly appConfig: IAppConfig,
 		public readonly container: Container ) { }
@@ -36,7 +36,7 @@ export class ContainerServiceHelper implements IAppHelper<ContainerService, IApp
 	}
 
 	/**
-	 * Converts a label, helperId and version to a single string representing the appId
+	 * Converts a label, helperId and version to a single string representing the id
 	 *
 	 * @param IDockerServiceOptions - { label, helperId, version }
 	 *
@@ -47,9 +47,9 @@ export class ContainerServiceHelper implements IAppHelper<ContainerService, IApp
 	}
 
 	/**
-	 * Extracts a label, helperId and version from an appId
+	 * Extracts a label, helperId and version from an id
 	 *
-	 * @param name - a string containing the appId
+	 * @param name - a string containing the id
 	 *
 	 * @returns An object containing the label, helperId and version of the application
 	 *

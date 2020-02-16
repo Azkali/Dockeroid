@@ -1,114 +1,105 @@
 import { Controller, Get, Inject, NotFoundException, Param } from '@nestjs/common';
-import { Dictionary } from 'lodash';
+import { AHypervisorController } from 'src/global/hypervisor/a-hypervisor.controller';
 import { Logger } from 'winston';
-import { VirshServiceHelper } from '../virsh/virsh-service-helper';
-import { VirshService } from '../virsh/virsh.service';
+import { VirshHypervisorService } from '../virsh/virsh.service';
 
 @Controller( 'virsh' )
-export class VirshController {
+export class VirshController extends AHypervisorController<VirshHypervisorService> {
 	public constructor(
-		@Inject( 'winston' ) private readonly logger: Logger,
-		private readonly virshService: VirshService,
-		) { }
+		@Inject( 'winston' ) protected readonly logger: Logger,
+		private readonly virshService: VirshHypervisorService,
+	) { super( logger, virshService ); }
 
 	/**
-	 * Simple Hello World confirming app is running
-	 * @return A string printing out Hello World
-	 */
-	@Get()
-	public getHello(): string {
-		return 'Wello Horld';
-	}
-
-	/**
-	 * Starts a virtualMachine
+	 * Starts a
 	 *
-	 * @param virtualMachineName - name of the virtualMachine to start
+	 * @param name - name of the  to start
 	 *
-	 * @returns A promise object containing the appId and a Dockerode.Container
+	 * @returns A promise object containing the id and a Virsh.
 	 */
-	@Get( 'start/:virtualMachineName' )
-	public async startContainer(
-		@Param( 'virtualMachineName' ) virtualMachineName: string,
+	@Get( 'start/:name' )
+	public async start(
+		@Param( 'name' ) name: string,
 	) {
-		return this.startContainerWithVersion( virtualMachineName );
+		return this.startWithVersion( name );
 	}
 
 	/**
-	 * Starts a virtualMachine with specified version
+	 * Starts a  with specified version
 	 *
-	 * @param virtualMachineName - name of the virtualMachine to start
+	 * @param name - name of the  to start
 	 *
-	 * @param version - version of the virtualMachine to start
+	 * @param version - version of the  to start
 	 *
-	 * @returns A promise object containing the appId and a Dockerode.Container
+	 * @returns A promise object containing the id and a Virsh.
 	 */
-	@Get( 'start/:appName/:version?' )
-	public async startContainerWithVersion(
-		@Param( 'appName' ) appName: string,
+	@Get( 'start/:name/:version?' )
+	public async startWithVersion(
+		@Param( 'name' ) name: string,
 		@Param( 'version' ) version?: string ) {
-		const newContainerHelper = await this.virshService.start( appName, version );
-		this.logger.info( `Started app ${appName} v${newContainerHelper.appConfig.version} with id ${newContainerHelper.id}` );
-		return { appId: newContainerHelper.id, virtualMachine: newContainerHelper.virsh };
+		const newHelper = await this.virshService.startWithVersion( name, version );
+		this.logger.info( `Started app ${name} v${newHelper.appConfig.version} with id ${newHelper.id}` );
+		return { id: newHelper.id, config: newHelper.appConfig };
 	}
 
 	/**
-	 * Get the status a virtualMachine
+	 * Get the status a
 	 *
-	 * @param appId - appId of the virtualMachine to fetch
+	 * @param id - id of the  to fetch
 	 *
-	 * @returns A promise of Dockerode.ContainerStats
+	 * @returns A promise of Virsh.Stats
 	 */
-	@Get( 'status/:appId' )
-	public async statusOfContainer(
-		@Param( 'appId' ) appId: string,
+	@Get( 'status/:id' )
+	public async statusOf(
+		@Param( 'id' ) id: string,
 	) {
-		const virtualMachineStatus = await this.virshService.status( appId );
-		return virtualMachineStatus;
+		const Status = await this.virshService.status( id );
+		return Status;
 	}
 	/**
-	 * Stop a running virtualMachine
+	 * Stop a running
 	 *
-	 * @param appId - appId of the virtualMachine to stop
+	 * @param id - id of the  to stop
 	 *
 	 * @returns A promise of void
 	 */
-	@Get( 'stop/:appId' )
-	public async stopContainer(
-		@Param( 'appId' ) appId: string,
+	@Get( 'stop/:id' )
+	public async stop(
+		@Param( 'id' ) id: string,
 	) {
-		const virtualMachineStatus = await this.virshService.stop( appId );
-		return virtualMachineStatus;
+		const Status = await this.virshService.stop( id );
+		return Status;
 	}
 
 	/**
-	 * Get a virtualMachine
+	 * Get a
 	 *
-	 * @param appId - appId of the virtualMachine to fetch
+	 * @param id - id of the  to fetch
 	 *
 	 * @returns A promise of IAppConfig
 	 *
 	 * @throws NotFoundException
 	 */
-	@Get( 'get/:appId' )
-	public async getContainer(
-		@Param( 'appId' ) appId: string,
+	@Get( 'get/:id' )
+	public async get(
+		@Param( 'id' ) id: string,
 	) {
-		const dockerHelper = this.virshService.get( appId );
-		if ( !dockerHelper ) {
+		const virshHelper = this.virshService.get( id );
+		if ( !virshHelper ) {
 			throw new NotFoundException();
 		}
-		return dockerHelper.appConfig;
+		return virshHelper.appConfig;
 	}
 
 	/**
-	 * Lists all available virtualMachine
+	 * Lists all available
 	 *
 	 * @returns A dictionnary of IAppConfig
 	 */
 	@Get( 'list' )
-	public async listContainers() {
+	public async listMachines() {
 		const listHelper = await this.virshService.list();
-		return listHelper;
+		return Object.entries( listHelper )
+			.map( ( [, helper] ) => [helper.id, helper.appConfig] );
 	}
 }

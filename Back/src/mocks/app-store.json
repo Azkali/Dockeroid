@@ -1,6 +1,6 @@
 [
 	{
-		"appName": "vscode",
+		"name": "vscode",
 		"type": "docker",
 		"version": [
 			{
@@ -27,7 +27,7 @@
 		]
 	},
 	{
-		"appName": "ubuntu",
+		"name": "ubuntu",
 		"type": "docker",
 		"version": [
 			{
@@ -44,7 +44,7 @@
 		]
 	},
 	{
-		"appName": "alpine",
+		"name": "alpine",
 		"type": "docker",
 		"version": [
 			{
@@ -61,7 +61,7 @@
 		]
 	},
 	{
-		"appName": "steam-os",
+		"name": "steam-os",
 		"type": "docker",
 		"version": [
 			{
@@ -138,7 +138,7 @@
 		]
 	},
 	{
-		"appName": "ubuntu",
+		"name": "ubuntu",
 		"type": "qemu",
 		"version": [ 
 			{

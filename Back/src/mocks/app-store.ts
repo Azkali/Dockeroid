@@ -6,7 +6,7 @@ export interface IAppVersion<TOptions extends {}> {
 }
 
 export interface IApp<TOptions extends {}> {
-	appName: string;
+	name: string;
 	icon: string;
 	type: string;
 	version: Array<IAppVersion<TOptions>>;
