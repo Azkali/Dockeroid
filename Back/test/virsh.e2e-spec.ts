@@ -1,10 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { AppModule } from '../src/app.module';
+import { VirshController } from '../src/virsh/controller/virsh.controller';
 
 describe( 'AppController (e2e)', () => {
   let app: INestApplication;
+  let controller: VirshController;
 
   beforeEach( async () => {
 	const moduleFixture: TestingModule = await Test.createTestingModule( {
@@ -17,6 +19,6 @@ describe( 'AppController (e2e)', () => {
 
   it( '/ (GET)', () =>
 	request( app.getHttpServer() )
-		.get( '/' )
-		.expect( 404 ) );
+		.get( '/virsh/list' )
+		.expect( 200 ) );
 } );
