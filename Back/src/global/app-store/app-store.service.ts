@@ -18,7 +18,7 @@ export interface IRepository {
 export interface IAppWithParams<TOptions extends {}> {
 	version: string;
 	options: TOptions;
-	appName: string;
+	name: string;
 	type: string;
 	repository: string;
 	image: string;
@@ -113,7 +113,7 @@ export class AppStoreService {
 	}
 
 	/**
-	 * Generic method to retrieve an application
+	 * Retrieve an application
 	 * @param name - Name of the app to get
 	 * @param version - Version of the app
 	 */
@@ -122,7 +122,7 @@ export class AppStoreService {
 			.pipe(
 				first(),
 				map( repoIndex => {
-					const app = repoIndex.find( repoItem => repoItem.appName === name );
+					const app = repoIndex.find( repoItem => repoItem.name === name );
 					if ( !app ) {
 						throw new Error( `Could not find app ${name}` );
 					}
